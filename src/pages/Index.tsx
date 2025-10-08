@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2, Sparkles, Download, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState("auto");
   const [mode, setMode] = useState<"generate" | "edit">("generate");
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const examplePrompts = [
     "A serene mountain landscape at sunset with vibrant orange and purple skies",
@@ -394,11 +396,21 @@ const Index = () => {
                   </div>
                 </div>
               ) : imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="Generated"
-                  className="w-full h-full object-contain"
-                />
+                <div 
+                  className="w-full h-full cursor-pointer group relative"
+                  onClick={() => setIsFullscreenOpen(true)}
+                >
+                  <img
+                    src={imageUrl}
+                    alt="Generated"
+                    className="w-full h-full object-contain transition-opacity group-hover:opacity-90"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
+                    <p className="text-white text-sm font-medium bg-black/50 px-4 py-2 rounded-full">
+                      Click to view fullscreen
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="flex h-full min-h-[400px] items-center justify-center text-muted-foreground">
                   <div className="text-center">
@@ -416,6 +428,24 @@ const Index = () => {
           <p>All Gemini models are free to use until October 13, 2025</p>
         </footer>
       </div>
+
+      {/* Fullscreen Image Dialog */}
+      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
+          <div 
+            className="relative w-full h-full cursor-pointer flex items-center justify-center"
+            onClick={() => setIsFullscreenOpen(false)}
+          >
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt="Generated fullscreen"
+                className="max-w-full max-h-[95vh] object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
