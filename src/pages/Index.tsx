@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2, Sparkles, Download, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -18,6 +19,8 @@ const Index = () => {
   const [aspectRatio, setAspectRatio] = useState("auto");
   const [mode, setMode] = useState<"generate" | "edit">("generate");
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const isMobile = useIsMobile();
 
   const examplePrompts = [
     "A serene mountain landscape at sunset with vibrant orange and purple skies",
@@ -135,16 +138,46 @@ const Index = () => {
     handleGenerate();
   };
 
-  const handleDownload = () => {
-    if (!imageUrl) return;
+  const handleDownload = async () => {
+    if (!imageUrl || isDownloading) return;
     
-    const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = `ai-generated-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Image downloaded!");
+    setIsDownloading(true);
+    
+    try {
+      // Convert data URL to Blob for better mobile compatibility
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      if (isMobile) {
+        // Mobile strategy: Open in new tab
+        window.open(blobUrl, '_blank');
+        toast.success("Image opened in new tab. Long press to save!");
+      } else {
+        // Desktop strategy: Trigger download
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = `ai-generated-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Image downloaded!");
+      }
+      
+      // Clean up blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image. Please try again.");
+    } finally {
+      // Reset download state after cooldown
+      setTimeout(() => setIsDownloading(false), 1000);
+    }
+  };
+
+  const handleTouchDownload = (e: React.TouchEvent) => {
+    e.preventDefault();
+    handleDownload();
   };
 
   // Convert aspect ratio string to CSS aspect-ratio value
@@ -369,11 +402,22 @@ const Index = () => {
               {imageUrl && (
                 <Button
                   onClick={handleDownload}
+                  onTouchEnd={handleTouchDownload}
+                  disabled={isDownloading}
                   size="default"
                   className="gap-2"
                 >
-                  <Download className="h-4 w-4" />
-                  Save Image
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4" />
+                      Save Image
+                    </>
+                  )}
                 </Button>
               )}
             </div>
