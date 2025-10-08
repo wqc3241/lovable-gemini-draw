@@ -82,7 +82,7 @@ const Index = () => {
         body: { 
           prompt,
           imageData: mode === "edit" ? uploadedImage : null,
-          aspectRatio: mode === "generate" ? aspectRatio : null
+          aspectRatio,
         },
       });
 
@@ -275,6 +275,25 @@ const Index = () => {
                       )}
                     </label>
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="aspect-ratio-edit" className="mb-2 block text-sm font-medium">
+                    Aspect Ratio
+                  </Label>
+                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                    <SelectTrigger id="aspect-ratio-edit" className="bg-background">
+                      <SelectValue placeholder="Select aspect ratio" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover">
+                      <SelectItem value="auto">Auto</SelectItem>
+                      <SelectItem value="1:1">1:1 (Square)</SelectItem>
+                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                      <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
+                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                      <SelectItem value="9:16">9:16 (Tall)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
