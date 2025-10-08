@@ -149,10 +149,15 @@ const Index = () => {
   const getAspectRatioStyle = (ratio: string) => {
     const ratioMap: Record<string, string> = {
       "1:1": "1/1",
-      "16:9": "16/9",
-      "9:16": "9/16",
-      "4:3": "4/3",
+      "2:3": "2/3",
+      "3:2": "3/2",
       "3:4": "3/4",
+      "4:3": "4/3",
+      "4:5": "4/5",
+      "5:4": "5/4",
+      "9:16": "9/16",
+      "16:9": "16/9",
+      "21:9": "21/9",
     };
     return ratioMap[ratio];
   };
@@ -201,10 +206,15 @@ const Index = () => {
                     <SelectContent className="bg-popover">
                       <SelectItem value="auto">Auto</SelectItem>
                       <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                      <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
+                      <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
                       <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
-                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                      <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+                      <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
                       <SelectItem value="9:16">9:16 (Tall)</SelectItem>
+                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                      <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -300,10 +310,15 @@ const Index = () => {
                     <SelectContent className="bg-popover">
                       <SelectItem value="auto">Auto</SelectItem>
                       <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                      <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
+                      <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
                       <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
-                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                      <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+                      <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
                       <SelectItem value="9:16">9:16 (Tall)</SelectItem>
+                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                      <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

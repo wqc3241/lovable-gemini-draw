@@ -79,6 +79,13 @@ serve(async (req) => {
       modalities: ["image", "text"],
     };
 
+    // Add image_config for aspect ratio control (Gemini-specific parameter)
+    if (aspectRatio && aspectRatio !== "auto") {
+      requestBody.image_config = {
+        aspect_ratio: aspectRatio
+      };
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
