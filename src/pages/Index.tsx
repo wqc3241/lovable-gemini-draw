@@ -268,12 +268,11 @@ const Index = () => {
               {imageUrl && (
                 <Button
                   onClick={handleDownload}
-                  variant="outline"
-                  size="sm"
+                  size="default"
                   className="gap-2"
                 >
                   <Download className="h-4 w-4" />
-                  Download
+                  Save Image
                 </Button>
               )}
             </div>
