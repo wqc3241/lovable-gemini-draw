@@ -24,16 +24,6 @@ serve(async (req) => {
       );
     }
 
-    // Map aspect ratio to size
-    const sizeMap: Record<string, string> = {
-      "1:1": "1024x1024",
-      "4:3": "1536x1024", 
-      "3:4": "1024x1536",
-      "16:9": "1792x1024",
-      "9:16": "1024x1792",
-      "auto": "auto"
-    };
-    const size = sizeMap[aspectRatio] || "auto";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -47,25 +37,19 @@ serve(async (req) => {
       );
     }
 
-    // Add aspect ratio instructions to the prompt
-    const dimensionInstructions = size !== "auto" 
-      ? ` Create the image in ${size} resolution (${aspectRatio} aspect ratio).`
-      : "";
-    const enhancedPrompt = prompt + dimensionInstructions;
-
-    console.log("Generating image with prompt:", enhancedPrompt, "aspectRatio:", aspectRatio, "hasImage:", !!imageData);
+    console.log("Generating image with prompt:", prompt, "aspectRatio:", aspectRatio, "hasImage:", !!imageData);
 
     // Build content based on whether we're editing or generating
     let content;
     if (imageData) {
       // Image editing mode
       content = [
-        { type: "text", text: enhancedPrompt },
+        { type: "text", text: prompt },
         { type: "image_url", image_url: { url: imageData } }
       ];
     } else {
       // Image generation mode
-      content = enhancedPrompt;
+      content = prompt;
     }
 
     const requestBody: any = {
