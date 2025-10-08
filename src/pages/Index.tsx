@@ -145,6 +145,18 @@ const Index = () => {
     toast.success("Image downloaded!");
   };
 
+  // Convert aspect ratio string to CSS aspect-ratio value
+  const getAspectRatioStyle = (ratio: string) => {
+    const ratioMap: Record<string, string> = {
+      "1:1": "1/1",
+      "16:9": "16/9",
+      "9:16": "9/16",
+      "4:3": "4/3",
+      "3:4": "3/4",
+    };
+    return ratioMap[ratio];
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
@@ -349,7 +361,14 @@ const Index = () => {
               )}
             </div>
 
-            <div className="relative min-h-[400px] overflow-hidden rounded-lg bg-muted/30 border border-border">
+            <div 
+              className="relative w-full overflow-hidden rounded-lg bg-muted/30 border border-border"
+              style={
+                imageUrl && aspectRatio !== "auto"
+                  ? { aspectRatio: getAspectRatioStyle(aspectRatio) }
+                  : { minHeight: "400px" }
+              }
+            >
               {isGenerating ? (
                 <div className="flex h-full min-h-[400px] items-center justify-center">
                   <div className="text-center">
@@ -363,7 +382,7 @@ const Index = () => {
                 <img
                   src={imageUrl}
                   alt="Generated"
-                  className="w-full object-contain"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div className="flex h-full min-h-[400px] items-center justify-center text-muted-foreground">
