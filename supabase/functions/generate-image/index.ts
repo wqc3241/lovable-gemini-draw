@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json();
+    const { prompt, imageData, aspectRatio } = await req.json();
     
     if (!prompt) {
       return new Response(
@@ -23,6 +23,17 @@ serve(async (req) => {
         }
       );
     }
+
+    // Map aspect ratio to size
+    const sizeMap: Record<string, string> = {
+      "1:1": "1024x1024",
+      "4:3": "1536x1024", 
+      "3:4": "1024x1536",
+      "16:9": "1792x1024",
+      "9:16": "1024x1792",
+      "auto": "auto"
+    };
+    const size = sizeMap[aspectRatio] || "auto";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -36,7 +47,36 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating image with prompt:", prompt);
+    console.log("Generating image with prompt:", prompt, "size:", size, "hasImage:", !!imageData);
+
+    // Build content based on whether we're editing or generating
+    let content;
+    if (imageData) {
+      // Image editing mode
+      content = [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: imageData } }
+      ];
+    } else {
+      // Image generation mode
+      content = prompt;
+    }
+
+    const requestBody: any = {
+      model: "google/gemini-2.5-flash-image-preview",
+      messages: [
+        {
+          role: "user",
+          content,
+        },
+      ],
+      modalities: ["image", "text"],
+    };
+
+    // Only add size parameter for generation (not editing)
+    if (!imageData && size !== "auto") {
+      requestBody.size = size;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -44,16 +84,7 @@ serve(async (req) => {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
