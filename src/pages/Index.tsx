@@ -42,21 +42,43 @@ const Index = () => {
   };
 
   const handleGenerate = async () => {
+    console.log("🚀 handleGenerate called - Start");
+    console.log("📝 Mode:", mode);
+    console.log("📝 Prompt:", prompt);
+    console.log("📝 Has uploaded image:", !!uploadedImage);
+    console.log("📝 Aspect ratio:", aspectRatio);
+
+    // Haptic feedback for iOS
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+
     if (!prompt.trim()) {
+      console.log("❌ No prompt entered");
       toast.error("Please enter a prompt");
       return;
     }
 
     if (mode === "edit" && !uploadedImage) {
+      console.log("❌ Edit mode but no image uploaded");
       toast.error("Please upload an image to edit");
       return;
     }
 
+    console.log("✅ Validation passed, starting generation");
     setIsGenerating(true);
     setImageUrl(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("generate-image", {
+      console.log("📡 Calling edge function...");
+      const startTime = Date.now();
+
+      // Add timeout handling
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Request timeout")), 60000)
+      );
+
+      const functionCall = supabase.functions.invoke("generate-image", {
         body: { 
           prompt,
           imageData: mode === "edit" ? uploadedImage : null,
@@ -64,24 +86,51 @@ const Index = () => {
         },
       });
 
+      const { data, error } = await Promise.race([
+        functionCall,
+        timeoutPromise
+      ]) as any;
+
+      const duration = Date.now() - startTime;
+      console.log(`⏱️ Function completed in ${duration}ms`);
+
       if (error) {
-        console.error("Function error:", error);
+        console.error("❌ Function error:", error);
         toast.error(error.message || "Failed to generate image");
         return;
       }
 
+      console.log("📦 Response data:", data ? "received" : "empty");
+      
       if (data?.imageUrl) {
+        console.log("✅ Image URL received, length:", data.imageUrl.length);
         setImageUrl(data.imageUrl);
         toast.success(mode === "edit" ? "Image edited successfully!" : "Image generated successfully!");
       } else {
+        console.log("❌ No imageUrl in response");
         toast.error("No image was generated");
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("An unexpected error occurred");
+      console.error("❌ Unexpected error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error details:", errorMessage);
+      
+      if (errorMessage === "Request timeout") {
+        toast.error("Request timed out. Please check your connection and try again.");
+      } else {
+        toast.error("An unexpected error occurred");
+      }
     } finally {
+      console.log("🏁 handleGenerate completed");
       setIsGenerating(false);
     }
+  };
+
+  // iOS-specific touch handler
+  const handleTouchGenerate = (e: React.TouchEvent) => {
+    console.log("👆 Touch event detected on iOS");
+    e.preventDefault();
+    handleGenerate();
   };
 
   const handleDownload = () => {
@@ -163,8 +212,10 @@ const Index = () => {
 
                 <Button
                   onClick={handleGenerate}
+                  onTouchEnd={handleTouchGenerate}
                   disabled={isGenerating}
-                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90"
+                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90 active:scale-95 transition-transform touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                   size="lg"
                 >
                   {isGenerating ? (
@@ -241,8 +292,10 @@ const Index = () => {
 
                 <Button
                   onClick={handleGenerate}
+                  onTouchEnd={handleTouchGenerate}
                   disabled={isGenerating || !uploadedImage}
-                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90"
+                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90 active:scale-95 transition-transform touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                   size="lg"
                 >
                   {isGenerating ? (
