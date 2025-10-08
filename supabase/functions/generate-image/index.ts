@@ -47,19 +47,25 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating image with prompt:", prompt, "size:", size, "hasImage:", !!imageData);
+    // Add aspect ratio instructions to the prompt
+    const dimensionInstructions = size !== "auto" 
+      ? ` Create the image in ${size} resolution (${aspectRatio} aspect ratio).`
+      : "";
+    const enhancedPrompt = prompt + dimensionInstructions;
+
+    console.log("Generating image with prompt:", enhancedPrompt, "aspectRatio:", aspectRatio, "hasImage:", !!imageData);
 
     // Build content based on whether we're editing or generating
     let content;
     if (imageData) {
       // Image editing mode
       content = [
-        { type: "text", text: prompt },
+        { type: "text", text: enhancedPrompt },
         { type: "image_url", image_url: { url: imageData } }
       ];
     } else {
       // Image generation mode
-      content = prompt;
+      content = enhancedPrompt;
     }
 
     const requestBody: any = {
@@ -72,11 +78,6 @@ serve(async (req) => {
       ],
       modalities: ["image", "text"],
     };
-
-    // Only add size parameter for generation (not editing)
-    if (!imageData && size !== "auto") {
-      requestBody.size = size;
-    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
