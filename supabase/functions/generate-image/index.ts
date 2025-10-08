@@ -134,9 +134,45 @@ serve(async (req) => {
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!imageUrl) {
-      console.error("No image URL in response");
+      // Log full response structure for debugging
+      console.error("No image URL in response. Full response structure:", JSON.stringify(data, null, 2));
+      
+      // Check if model returned an error message or explanation
+      const modelMessage = data.choices?.[0]?.message?.content;
+      if (modelMessage) {
+        console.error("Model returned message instead of image:", modelMessage);
+        return new Response(
+          JSON.stringify({ 
+            error: "Image generation blocked",
+            details: modelMessage
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      // Check if response has choices at all
+      if (!data.choices || data.choices.length === 0) {
+        console.error("No choices in response");
+        return new Response(
+          JSON.stringify({ 
+            error: "Invalid AI response",
+            details: "The AI model did not return any results. Please try again."
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: "No image generated" }),
+        JSON.stringify({ 
+          error: "No image generated",
+          details: "The AI model completed but did not return an image. This may be due to content policy restrictions."
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
