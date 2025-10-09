@@ -158,6 +158,7 @@ const Index = () => {
     
     try {
       if (generatedImages.length === 1) {
+        // Single image - download directly (no ZIP needed)
         const response = await fetch(generatedImages[0]);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -177,32 +178,65 @@ const Index = () => {
         
         setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       } else {
-        for (let i = 0; i < generatedImages.length; i++) {
-          const response = await fetch(generatedImages[i]);
-          const blob = await response.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          
-          if (isMobile) {
-            setTimeout(() => {
-              window.open(blobUrl, '_blank');
-            }, i * 500);
-          } else {
-            const link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = `ai-generated-${Date.now()}-${i + 1}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // Multiple images - create ZIP file
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+        const timestamp = Date.now();
+        
+        console.log(`📦 Creating ZIP with ${generatedImages.length} images`);
+        
+        // Fetch all images in parallel and add to ZIP
+        const imagePromises = generatedImages.map(async (imageUrl, index) => {
+          try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const filename = `ai-generated-${timestamp}-${index + 1}.png`;
+            zip.file(filename, blob);
+            console.log(`✅ Added ${filename} to ZIP`);
+          } catch (error) {
+            console.error(`❌ Failed to fetch image ${index + 1}:`, error);
+            throw error;
           }
+        });
+        
+        // Wait for all images to be added
+        await Promise.all(imagePromises);
+        
+        // Generate ZIP file
+        console.log('🗜️ Compressing ZIP file...');
+        const zipBlob = await zip.generateAsync({ 
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        });
+        
+        console.log(`✅ ZIP created: ${(zipBlob.size / 1024 / 1024).toFixed(2)} MB`);
+        
+        // Download ZIP file
+        const blobUrl = URL.createObjectURL(zipBlob);
+        const zipFilename = `ai-images-${timestamp}.zip`;
+        
+        if (isMobile) {
+          window.open(blobUrl, '_blank');
+          toast.success(`ZIP file ready! (${generatedImages.length} images)`, {
+            description: "Tap to download",
+            duration: 5000
+          });
+        } else {
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = zipFilename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+          toast.success(`${generatedImages.length} images downloaded!`, {
+            description: `Saved as ${zipFilename}`,
+            duration: 5000
+          });
         }
         
-        toast.success(
-          isMobile 
-            ? `${generatedImages.length} images opened in tabs!` 
-            : `${generatedImages.length} images downloaded!`
-        );
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
       }
     } catch (error) {
       console.error("Download error:", error);
