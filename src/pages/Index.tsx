@@ -393,6 +393,37 @@ const Index = () => {
     toast.success("Prompt loaded in Generate tab!");
   };
 
+  const handleCopyPromptText = async () => {
+    if (!prompt.trim()) {
+      toast.error("No prompt to copy");
+      return;
+    }
+
+    try {
+      // Use Clipboard API (works on all modern browsers including mobile)
+      await navigator.clipboard.writeText(prompt);
+      toast.success("Prompt copied to clipboard!");
+    } catch (error) {
+      // Fallback method for older browsers or if clipboard API fails
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = prompt;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+        toast.success("Prompt copied to clipboard!");
+      } catch (fallbackError) {
+        console.error("Failed to copy:", fallbackError);
+        toast.error("Failed to copy prompt");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
@@ -472,9 +503,21 @@ const Index = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="prompt" className="mb-2 block text-sm font-medium">
-                    Prompt
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="prompt" className="text-sm font-medium">
+                      Prompt
+                    </Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyPromptText}
+                      disabled={!prompt.trim()}
+                      className="h-7 gap-1.5 text-xs"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy Prompt
+                    </Button>
+                  </div>
                   <Textarea
                     id="prompt"
                     placeholder="Describe the image you want to generate... (You can paste images here with Ctrl+V)"
@@ -620,9 +663,21 @@ const Index = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-prompt" className="mb-2 block text-sm font-medium">
-                    Edit Instructions
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="edit-prompt" className="text-sm font-medium">
+                      Edit Instructions
+                    </Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyPromptText}
+                      disabled={!prompt.trim()}
+                      className="h-7 gap-1.5 text-xs"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy Prompt
+                    </Button>
+                  </div>
                   <Textarea
                     id="edit-prompt"
                     placeholder="Describe how you want to edit the image... (You can paste reference images here with Ctrl+V)"
