@@ -37,7 +37,21 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating image with prompt:", prompt, "aspectRatio:", aspectRatio, "hasImage:", !!imageData);
+    // Log incoming request details
+    console.log("=== 📥 INCOMING REQUEST ===");
+    console.log("Prompt length:", prompt?.length || 0);
+    console.log("Prompt content:", prompt?.substring(0, 200) + (prompt?.length > 200 ? "..." : ""));
+    console.log("Aspect ratio:", aspectRatio);
+    console.log("Image data present:", !!imageData);
+
+    if (imageData) {
+      // Verify image format and size
+      const imageFormat = imageData.substring(0, 30);
+      const imageSizeKB = Math.round((imageData.length * 0.75) / 1024);
+      console.log("Image format prefix:", imageFormat);
+      console.log("Image data size (approx):", imageSizeKB, "KB");
+      console.log("Image data length:", imageData.length, "characters");
+    }
 
     // Build content based on whether we're editing or generating
     let content;
@@ -69,6 +83,34 @@ serve(async (req) => {
         aspect_ratio: aspectRatio
       };
     }
+
+    // Log the complete payload structure being sent to API
+    console.log("=== 📤 API REQUEST PAYLOAD ===");
+    console.log("Model:", requestBody.model);
+    console.log("Modalities:", requestBody.modalities);
+    console.log("Message role:", requestBody.messages[0].role);
+
+    if (Array.isArray(requestBody.messages[0].content)) {
+      console.log("Content type: ARRAY (image editing mode)");
+      console.log("Content items:", requestBody.messages[0].content.length);
+      requestBody.messages[0].content.forEach((item: any, idx: number) => {
+        if (item.type === "text") {
+          console.log(`  [${idx}] Text:`, item.text.substring(0, 100) + "...");
+        } else if (item.type === "image_url") {
+          console.log(`  [${idx}] Image URL present:`, !!item.image_url?.url);
+          console.log(`  [${idx}] Image URL format:`, item.image_url?.url?.substring(0, 30));
+        }
+      });
+    } else {
+      console.log("Content type: STRING (text-only generation)");
+      console.log("Content:", requestBody.messages[0].content.substring(0, 100) + "...");
+    }
+
+    if (requestBody.image_config) {
+      console.log("Image config:", JSON.stringify(requestBody.image_config));
+    }
+
+    console.log("=== 🚀 SENDING TO AI GATEWAY ===");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -113,12 +155,16 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("AI response received");
+    
+    console.log("=== ✅ AI RESPONSE RECEIVED ===");
+    console.log("Response status: SUCCESS");
 
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     // Check for IMAGE_OTHER (content policy rejection)
     const finishReason = data.choices?.[0]?.native_finish_reason;
+    console.log("Finish reason:", finishReason);
+    console.log("Image URL present:", !!imageUrl);
     if (finishReason === "IMAGE_OTHER") {
       console.error("Content policy rejection detected (IMAGE_OTHER)");
       return new Response(
