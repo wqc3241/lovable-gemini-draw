@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, ChevronRight, FileText, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,9 +19,12 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState("auto");
   const [imageCount, setImageCount] = useState(1);
-  const [mode, setMode] = useState<"generate" | "edit">("generate");
+  const [mode, setMode] = useState<"generate" | "edit" | "prompt">("generate");
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [analyzedPrompt, setAnalyzedPrompt] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [promptImage, setPromptImage] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const examplePrompts = [
@@ -309,6 +312,53 @@ const Index = () => {
     }
   };
 
+  const handleAnalyzeImage = async () => {
+    if (!promptImage) {
+      toast.error("Please upload an image first");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalyzedPrompt("");
+
+    try {
+      console.log('🔍 Starting image analysis...');
+      const { data, error } = await supabase.functions.invoke("analyze-image", {
+        body: { imageData: promptImage }
+      });
+
+      if (error) throw error;
+
+      if (data?.prompt) {
+        setAnalyzedPrompt(data.prompt);
+        toast.success("Prompt generated successfully!");
+      } else {
+        throw new Error("No prompt returned");
+      }
+    } catch (error) {
+      console.error("Error analyzing image:", error);
+      toast.error("Failed to analyze image. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(analyzedPrompt);
+      toast.success("Prompt copied to clipboard!");
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      toast.error("Failed to copy prompt");
+    }
+  };
+
+  const handleUsePromptInGenerate = () => {
+    setPrompt(analyzedPrompt);
+    setMode("generate");
+    toast.success("Prompt loaded in Generate tab!");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
@@ -329,17 +379,21 @@ const Index = () => {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
-            <Tabs value={mode} onValueChange={(v) => setMode(v as "generate" | "edit")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="generate" className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Generate
-                </TabsTrigger>
-                <TabsTrigger value="edit" className="gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  Edit
-                </TabsTrigger>
-              </TabsList>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as "generate" | "edit" | "prompt")} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="generate" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Generate
+              </TabsTrigger>
+              <TabsTrigger value="edit" className="gap-2">
+                <ImageIcon className="h-4 w-4" />
+                Edit
+              </TabsTrigger>
+              <TabsTrigger value="prompt" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Image Prompt
+              </TabsTrigger>
+            </TabsList>
 
               <TabsContent value="generate" className="space-y-4">
                 <div>
@@ -537,6 +591,104 @@ const Index = () => {
                     </>
                   )}
                 </Button>
+              </TabsContent>
+
+              <TabsContent value="prompt" className="space-y-4">
+                <div>
+                  <Label className="mb-2 block text-sm font-medium">
+                    Upload Image to Analyze
+                  </Label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!file.type.startsWith("image/")) {
+                          toast.error("Please upload an image file");
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          setPromptImage(event.target?.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                      id="prompt-image-upload"
+                    />
+                    <label
+                      htmlFor="prompt-image-upload"
+                      className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border bg-background p-8 transition-colors hover:border-primary hover:bg-accent"
+                    >
+                      <div className="text-center">
+                        <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Click to upload an image for analysis
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  {promptImage && (
+                    <div className="mt-4">
+                      <img
+                        src={promptImage}
+                        alt="Image to analyze"
+                        className="w-full rounded-lg border border-border"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleAnalyzeImage}
+                  disabled={isAnalyzing || !promptImage}
+                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90"
+                  size="lg"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing Image...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Prompt from Image
+                    </>
+                  )}
+                </Button>
+
+                {analyzedPrompt && (
+                  <div className="mt-6 space-y-3">
+                    <Label className="text-sm font-medium">Generated Prompt:</Label>
+                    <div className="rounded-lg border border-border bg-muted/50 p-4">
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {analyzedPrompt}
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleCopyPrompt}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copy Prompt
+                      </Button>
+                      <Button
+                        onClick={handleUsePromptInGenerate}
+                        className="flex-1 bg-gradient-to-r from-primary to-accent-foreground"
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Use in Generate
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </Card>
