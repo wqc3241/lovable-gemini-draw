@@ -6,17 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Sparkles, Download, Upload, Image as ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState("auto");
+  const [imageCount, setImageCount] = useState(1);
   const [mode, setMode] = useState<"generate" | "edit">("generate");
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -47,158 +49,174 @@ const Index = () => {
   };
 
   const handleGenerate = async () => {
-    console.log("🚀 handleGenerate called - Start");
-    console.log("📝 Mode:", mode);
-    console.log("📝 Prompt:", prompt);
-    console.log("📝 Has uploaded image:", !!uploadedImage);
-    console.log("📝 Aspect ratio:", aspectRatio);
-
-    // Haptic feedback for iOS
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
+    if (mode === "edit" && !uploadedImage) {
+      toast.error("Please upload an image first");
+      return;
     }
 
     if (!prompt.trim()) {
-      console.log("❌ No prompt entered");
       toast.error("Please enter a prompt");
       return;
     }
 
-    if (mode === "edit" && !uploadedImage) {
-      console.log("❌ Edit mode but no image uploaded");
-      toast.error("Please upload an image to edit");
-      return;
-    }
-
-    console.log("✅ Validation passed, starting generation");
     setIsGenerating(true);
-    setImageUrl(null);
+    setGeneratedImages([]);
+    setCurrentImageIndex(0);
+    
+    const newImages: string[] = [];
+    let successCount = 0;
+    let failCount = 0;
 
     try {
-      console.log("📡 Calling edge function...");
-      const startTime = Date.now();
-
-      // Add timeout handling
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Request timeout")), 60000)
-      );
-
-      const functionCall = supabase.functions.invoke("generate-image", {
-        body: { 
-          prompt,
-          imageData: mode === "edit" ? uploadedImage : null,
-          aspectRatio,
-        },
-      });
-
-      const { data, error } = await Promise.race([
-        functionCall,
-        timeoutPromise
-      ]) as any;
-
-      const duration = Date.now() - startTime;
-      console.log(`⏱️ Function completed in ${duration}ms`);
-
-      if (error) {
-        console.error("❌ Function error:", error);
+      for (let i = 0; i < imageCount; i++) {
+        console.log(`📸 Generating image ${i + 1} of ${imageCount}`);
         
-        // Check if error has details (from edge function)
-        if (data?.error && data?.details) {
-          toast.error(data.error, {
-            description: data.details,
-            duration: 10000, // Longer duration for detailed message
+        try {
+          const { data, error } = await supabase.functions.invoke("generate-image", {
+            body: { 
+              prompt,
+              imageData: mode === "edit" ? uploadedImage : null,
+              aspectRatio,
+            },
           });
-        } else {
-          toast.error(error.message || "Failed to generate image");
+
+          if (error) {
+            console.error(`❌ Image ${i + 1} error:`, error);
+            
+            if (data?.error && data?.details) {
+              failCount++;
+              if (imageCount === 1) {
+                toast.error(data.error, {
+                  description: data.details,
+                  duration: 10000,
+                });
+              }
+            } else {
+              failCount++;
+              if (imageCount === 1) {
+                toast.error(error.message || "Failed to generate image");
+              }
+            }
+            continue;
+          }
+
+          if (data?.imageUrl) {
+            console.log(`✅ Image ${i + 1} generated successfully`);
+            newImages.push(data.imageUrl);
+            successCount++;
+            setGeneratedImages([...newImages]);
+          } else {
+            console.log(`❌ No imageUrl in response for image ${i + 1}`);
+            failCount++;
+            
+            if (imageCount === 1) {
+              if (data?.error && data?.details) {
+                toast.error(data.error, {
+                  description: data.details,
+                  duration: 10000,
+                });
+              } else {
+                toast.error("No image was generated. Please try again.");
+              }
+            }
+          }
+        } catch (innerError) {
+          console.error(`❌ Image ${i + 1} unexpected error:`, innerError);
+          failCount++;
         }
-        return;
       }
 
-      console.log("📦 Response data:", data ? "received" : "empty");
+      if (successCount > 0) {
+        toast.success(
+          imageCount === 1 
+            ? (mode === "edit" ? "Image edited successfully!" : "Image generated successfully!")
+            : `Successfully generated ${successCount} of ${imageCount} images!`
+        );
+      }
       
-      if (data?.imageUrl) {
-        console.log("✅ Image URL received, length:", data.imageUrl.length);
-        setImageUrl(data.imageUrl);
-        toast.success(mode === "edit" ? "Image edited successfully!" : "Image generated successfully!");
-      } else {
-        console.log("❌ No imageUrl in response");
-        
-        // Check if we have error details from edge function
-        if (data?.error && data?.details) {
-          toast.error(data.error, {
-            description: data.details,
-            duration: 10000,
-          });
-        } else {
-          toast.error("No image was generated. Please try again.");
-        }
+      if (failCount > 0 && imageCount > 1) {
+        toast.error(`${failCount} image(s) failed to generate`);
       }
     } catch (error) {
       console.error("❌ Unexpected error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error details:", errorMessage);
-      
-      if (errorMessage === "Request timeout") {
-        toast.error("Request timed out. Please check your connection and try again.");
-      } else {
-        toast.error("An unexpected error occurred");
-      }
+      toast.error("An unexpected error occurred");
     } finally {
-      console.log("🏁 handleGenerate completed");
       setIsGenerating(false);
+      console.log("🏁 handleGenerate finished");
     }
   };
 
-  // iOS-specific touch handler
   const handleTouchGenerate = (e: React.TouchEvent) => {
-    console.log("👆 Touch event detected on iOS");
     e.preventDefault();
     handleGenerate();
   };
 
-  const handleDownload = async () => {
-    if (!imageUrl || isDownloading) return;
+  const handleDownloadAll = async () => {
+    if (generatedImages.length === 0 || isDownloading) return;
     
     setIsDownloading(true);
     
     try {
-      // Convert data URL to Blob for better mobile compatibility
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      if (isMobile) {
-        // Mobile strategy: Open in new tab
-        window.open(blobUrl, '_blank');
-        toast.success("Image opened in new tab. Long press to save!");
+      if (generatedImages.length === 1) {
+        const response = await fetch(generatedImages[0]);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        if (isMobile) {
+          window.open(blobUrl, '_blank');
+          toast.success("Image opened in new tab. Long press to save!");
+        } else {
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = `ai-generated-${Date.now()}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.success("Image downloaded!");
+        }
+        
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       } else {
-        // Desktop strategy: Trigger download
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = `ai-generated-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success("Image downloaded!");
+        for (let i = 0; i < generatedImages.length; i++) {
+          const response = await fetch(generatedImages[i]);
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          
+          if (isMobile) {
+            setTimeout(() => {
+              window.open(blobUrl, '_blank');
+            }, i * 500);
+          } else {
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = `ai-generated-${Date.now()}-${i + 1}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+          
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+        }
+        
+        toast.success(
+          isMobile 
+            ? `${generatedImages.length} images opened in tabs!` 
+            : `${generatedImages.length} images downloaded!`
+        );
       }
-      
-      // Clean up blob URL after a delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Failed to download image. Please try again.");
+      toast.error("Failed to download images. Please try again.");
     } finally {
-      // Reset download state after cooldown
       setTimeout(() => setIsDownloading(false), 1000);
     }
   };
 
   const handleTouchDownload = (e: React.TouchEvent) => {
     e.preventDefault();
-    handleDownload();
+    handleDownloadAll();
   };
 
-  // Convert aspect ratio string to CSS aspect-ratio value
   const getAspectRatioStyle = (ratio: string) => {
     const ratioMap: Record<string, string> = {
       "1:1": "1/1",
@@ -213,6 +231,14 @@ const Index = () => {
       "21:9": "21/9",
     };
     return ratioMap[ratio];
+  };
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setCurrentImageIndex((prev) => prev > 0 ? prev - 1 : generatedImages.length - 1);
+    } else {
+      setCurrentImageIndex((prev) => prev < generatedImages.length - 1 ? prev + 1 : 0);
+    }
   };
 
   return (
@@ -268,6 +294,23 @@ const Index = () => {
                       <SelectItem value="9:16">9:16 (Tall)</SelectItem>
                       <SelectItem value="16:9">16:9 (Wide)</SelectItem>
                       <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="image-count" className="mb-2 block text-sm font-medium">
+                    Number of Images
+                  </Label>
+                  <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
+                    <SelectTrigger id="image-count" className="bg-background">
+                      <SelectValue placeholder="Select number" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover">
+                      <SelectItem value="1">1 Image</SelectItem>
+                      <SelectItem value="3">3 Images</SelectItem>
+                      <SelectItem value="5">5 Images</SelectItem>
+                      <SelectItem value="9">9 Images</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -377,6 +420,23 @@ const Index = () => {
                 </div>
 
                 <div>
+                  <Label htmlFor="image-count-edit" className="mb-2 block text-sm font-medium">
+                    Number of Images
+                  </Label>
+                  <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
+                    <SelectTrigger id="image-count-edit" className="bg-background">
+                      <SelectValue placeholder="Select number" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover">
+                      <SelectItem value="1">1 Image</SelectItem>
+                      <SelectItem value="3">3 Images</SelectItem>
+                      <SelectItem value="5">5 Images</SelectItem>
+                      <SelectItem value="9">9 Images</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="edit-prompt" className="mb-2 block text-sm font-medium">
                     Edit Instructions
                   </Label>
@@ -415,35 +475,62 @@ const Index = () => {
 
           {/* Output Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Result</h2>
-              {imageUrl && (
-                <Button
-                  onClick={handleDownload}
-                  onTouchEnd={handleTouchDownload}
-                  disabled={isDownloading}
-                  size="default"
-                  className="gap-2"
-                >
-                  {isDownloading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4" />
-                      Save Image
-                    </>
-                  )}
-                </Button>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-semibold">
+                  Result {generatedImages.length > 1 && `(${currentImageIndex + 1}/${generatedImages.length})`}
+                </h2>
+                {generatedImages.length > 0 && (
+                  <Button
+                    onClick={handleDownloadAll}
+                    onTouchEnd={handleTouchDownload}
+                    disabled={isDownloading}
+                    size="default"
+                    className="gap-2"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        Save {generatedImages.length > 1 ? 'All' : 'Image'}
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+              
+              {/* Thumbnail carousel */}
+              {generatedImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {generatedImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex 
+                          ? 'border-primary ring-2 ring-primary/50' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
             <div 
               className="relative w-full overflow-hidden rounded-lg bg-muted/30 border border-border"
               style={
-                imageUrl && aspectRatio !== "auto"
+                generatedImages[currentImageIndex] && aspectRatio !== "auto"
                   ? { aspectRatio: getAspectRatioStyle(aspectRatio) }
                   : { minHeight: "400px" }
               }
@@ -453,25 +540,47 @@ const Index = () => {
                   <div className="text-center">
                     <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary" />
                     <p className="text-sm text-muted-foreground">
-                      {mode === "edit" ? "Editing your image..." : "Creating your image..."}
+                      Generating {generatedImages.length + 1} of {imageCount} images...
                     </p>
+                    {generatedImages.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {generatedImages.length} completed
+                      </p>
+                    )}
                   </div>
                 </div>
-              ) : imageUrl ? (
-                <div 
-                  className="w-full h-full cursor-pointer group relative"
-                  onClick={() => setIsFullscreenOpen(true)}
-                >
+              ) : generatedImages.length > 0 ? (
+                <div className="w-full h-full cursor-pointer group relative">
                   <img
-                    src={imageUrl}
-                    alt="Generated"
-                    className="w-full h-full object-contain transition-opacity group-hover:opacity-90"
+                    src={generatedImages[currentImageIndex]}
+                    alt={`Generated ${currentImageIndex + 1}`}
+                    className="w-full h-full object-contain"
+                    onClick={() => setIsFullscreenOpen(true)}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
-                    <p className="text-white text-sm font-medium bg-black/50 px-4 py-2 rounded-full">
-                      Click to view fullscreen
-                    </p>
-                  </div>
+                  
+                  {/* Navigation arrows */}
+                  {generatedImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateImage('prev');
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateImage('next');
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="flex h-full min-h-[400px] items-center justify-center text-muted-foreground">
@@ -494,16 +603,43 @@ const Index = () => {
       {/* Fullscreen Image Dialog */}
       <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
-          <div 
-            className="relative w-full h-full cursor-pointer flex items-center justify-center"
-            onClick={() => setIsFullscreenOpen(false)}
-          >
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Generated fullscreen"
-                className="max-w-full max-h-[95vh] object-contain"
-              />
+          <div className="relative w-full h-full flex items-center justify-center">
+            {generatedImages[currentImageIndex] && (
+              <>
+                <img
+                  src={generatedImages[currentImageIndex]}
+                  alt="Generated fullscreen"
+                  className="max-w-full max-h-[95vh] object-contain"
+                  onClick={() => setIsFullscreenOpen(false)}
+                />
+                
+                {/* Navigation in fullscreen */}
+                {generatedImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateImage('prev');
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateImage('next');
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/70 px-4 py-2 rounded-full">
+                      {currentImageIndex + 1} / {generatedImages.length}
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </div>
         </DialogContent>
