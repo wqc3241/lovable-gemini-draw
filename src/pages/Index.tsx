@@ -62,14 +62,13 @@ const Index = () => {
     setIsGenerating(true);
     setGeneratedImages([]);
     setCurrentImageIndex(0);
-    
-    const newImages: string[] = [];
-    let successCount = 0;
-    let failCount = 0;
+
+    console.log(`🎨 Starting parallel generation of ${imageCount} image(s)`);
 
     try {
-      for (let i = 0; i < imageCount; i++) {
-        console.log(`📸 Generating image ${i + 1} of ${imageCount}`);
+      // Create an array of promises for parallel generation
+      const generatePromises = Array.from({ length: imageCount }, async (_, i) => {
+        console.log(`📸 Starting generation ${i + 1} of ${imageCount}`);
         
         try {
           const { data, error } = await supabase.functions.invoke("generate-image", {
@@ -79,36 +78,35 @@ const Index = () => {
               aspectRatio,
             },
           });
+          
+          return { index: i, data, error };
+        } catch (innerError) {
+          console.error(`❌ Image ${i + 1} unexpected error:`, innerError);
+          return { index: i, data: null, error: innerError };
+        }
+      });
 
-          if (error) {
-            console.error(`❌ Image ${i + 1} error:`, error);
-            
-            if (data?.error && data?.details) {
-              failCount++;
-              if (imageCount === 1) {
-                toast.error(data.error, {
-                  description: data.details,
-                  duration: 10000,
-                });
-              }
-            } else {
-              failCount++;
-              if (imageCount === 1) {
-                toast.error(error.message || "Failed to generate image");
-              }
-            }
-            continue;
-          }
+      // Wait for all images to generate in parallel
+      const results = await Promise.allSettled(generatePromises);
 
-          if (data?.imageUrl) {
-            console.log(`✅ Image ${i + 1} generated successfully`);
+      // Process all results
+      const newImages: string[] = [];
+      let successCount = 0;
+      let failCount = 0;
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          const { data, error } = result.value;
+          
+          if (!error && data?.imageUrl) {
             newImages.push(data.imageUrl);
             successCount++;
-            setGeneratedImages([...newImages]);
+            console.log(`✅ Image ${index + 1} generated successfully`);
           } else {
-            console.log(`❌ No imageUrl in response for image ${i + 1}`);
             failCount++;
+            console.error(`❌ Image ${index + 1} failed:`, error || 'No imageUrl');
             
+            // Show detailed error for single image generation
             if (imageCount === 1) {
               if (data?.error && data?.details) {
                 toast.error(data.error, {
@@ -116,15 +114,17 @@ const Index = () => {
                   duration: 10000,
                 });
               } else {
-                toast.error("No image was generated. Please try again.");
+                toast.error(error?.message || "Failed to generate image");
               }
             }
           }
-        } catch (innerError) {
-          console.error(`❌ Image ${i + 1} unexpected error:`, innerError);
+        } else {
           failCount++;
+          console.error(`❌ Image ${index + 1} rejected:`, result.reason);
         }
-      }
+      });
+
+      setGeneratedImages(newImages);
 
       if (successCount > 0) {
         toast.success(
@@ -536,19 +536,14 @@ const Index = () => {
               }
             >
               {isGenerating ? (
-                <div className="flex h-full min-h-[400px] items-center justify-center">
-                  <div className="text-center">
-                    <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">
-                      Generating {generatedImages.length + 1} of {imageCount} images...
-                    </p>
-                    {generatedImages.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {generatedImages.length} completed
-                      </p>
-                    )}
-                  </div>
-                </div>
+            <div className="flex h-full min-h-[400px] items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">
+                  Generating {imageCount} {imageCount === 1 ? 'image' : 'images'}...
+                </p>
+              </div>
+            </div>
               ) : generatedImages.length > 0 ? (
                 <div className="w-full h-full cursor-pointer group relative">
                   <img
