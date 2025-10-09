@@ -117,6 +117,22 @@ serve(async (req) => {
 
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
+    // Check for IMAGE_OTHER (content policy rejection)
+    const finishReason = data.choices?.[0]?.native_finish_reason;
+    if (finishReason === "IMAGE_OTHER") {
+      console.error("Content policy rejection detected (IMAGE_OTHER)");
+      return new Response(
+        JSON.stringify({ 
+          error: "Content Policy Violation",
+          details: "The AI refused to generate this image due to content policy restrictions. This commonly happens when:\n\n• The uploaded image contains people or faces\n• The prompt describes sensitive content or poses\n• The combination of image + prompt violates safety guidelines\n\nSuggestions:\n• Try a different image\n• Use more generic descriptions\n• Try generating from text only instead of editing"
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
     if (!imageUrl) {
       // Log full response structure for debugging
       console.error("No image URL in response. Full response structure:", JSON.stringify(data, null, 2));

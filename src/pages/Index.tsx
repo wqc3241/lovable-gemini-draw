@@ -101,7 +101,16 @@ const Index = () => {
 
       if (error) {
         console.error("❌ Function error:", error);
-        toast.error(error.message || "Failed to generate image");
+        
+        // Check if error has details (from edge function)
+        if (data?.error && data?.details) {
+          toast.error(data.error, {
+            description: data.details,
+            duration: 10000, // Longer duration for detailed message
+          });
+        } else {
+          toast.error(error.message || "Failed to generate image");
+        }
         return;
       }
 
@@ -113,7 +122,16 @@ const Index = () => {
         toast.success(mode === "edit" ? "Image edited successfully!" : "Image generated successfully!");
       } else {
         console.log("❌ No imageUrl in response");
-        toast.error("No image was generated");
+        
+        // Check if we have error details from edge function
+        if (data?.error && data?.details) {
+          toast.error(data.error, {
+            description: data.details,
+            duration: 10000,
+          });
+        } else {
+          toast.error("No image was generated. Please try again.");
+        }
       }
     } catch (error) {
       console.error("❌ Unexpected error:", error);
