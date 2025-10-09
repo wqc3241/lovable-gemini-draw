@@ -461,45 +461,47 @@ const Index = () => {
             </TabsList>
 
               <TabsContent value="generate" className="space-y-4">
-                <div>
-                  <Label htmlFor="aspect-ratio" className="mb-2 block text-sm font-medium">
-                    Aspect Ratio
-                  </Label>
-                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                    <SelectTrigger id="aspect-ratio" className="bg-background">
-                      <SelectValue placeholder="Select aspect ratio" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover">
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                      <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
-                      <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
-                      <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
-                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
-                      <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
-                      <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
-                      <SelectItem value="9:16">9:16 (Tall)</SelectItem>
-                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
-                      <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="aspect-ratio" className="mb-2 block text-sm font-medium">
+                      Aspect Ratio
+                    </Label>
+                    <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                      <SelectTrigger id="aspect-ratio" className="bg-background">
+                        <SelectValue placeholder="Select aspect ratio" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="1:1">1:1 (Square)</SelectItem>
+                        <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
+                        <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
+                        <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
+                        <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                        <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+                        <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
+                        <SelectItem value="9:16">9:16 (Tall)</SelectItem>
+                        <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                        <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div>
-                  <Label htmlFor="image-count" className="mb-2 block text-sm font-medium">
-                    Number of Images
-                  </Label>
-                  <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
-                    <SelectTrigger id="image-count" className="bg-background">
-                      <SelectValue placeholder="Select number" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover">
-                      <SelectItem value="1">1 Image</SelectItem>
-                      <SelectItem value="3">3 Images</SelectItem>
-                      <SelectItem value="5">5 Images</SelectItem>
-                      <SelectItem value="9">9 Images</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Label htmlFor="image-count" className="mb-2 block text-sm font-medium">
+                      Number of Images
+                    </Label>
+                    <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
+                      <SelectTrigger id="image-count" className="bg-background">
+                        <SelectValue placeholder="Select number" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="1">1 Image</SelectItem>
+                        <SelectItem value="3">3 Images</SelectItem>
+                        <SelectItem value="5">5 Images</SelectItem>
+                        <SelectItem value="9">9 Images</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div>
@@ -621,45 +623,47 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="aspect-ratio-edit" className="mb-2 block text-sm font-medium">
-                    Aspect Ratio
-                  </Label>
-                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                    <SelectTrigger id="aspect-ratio-edit" className="bg-background">
-                      <SelectValue placeholder="Select aspect ratio" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover">
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                      <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
-                      <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
-                      <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
-                      <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
-                      <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
-                      <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
-                      <SelectItem value="9:16">9:16 (Tall)</SelectItem>
-                      <SelectItem value="16:9">16:9 (Wide)</SelectItem>
-                      <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="aspect-ratio-edit" className="mb-2 block text-sm font-medium">
+                      Aspect Ratio
+                    </Label>
+                    <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                      <SelectTrigger id="aspect-ratio-edit" className="bg-background">
+                        <SelectValue placeholder="Select aspect ratio" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="1:1">1:1 (Square)</SelectItem>
+                        <SelectItem value="2:3">2:3 (Portrait)</SelectItem>
+                        <SelectItem value="3:2">3:2 (Landscape)</SelectItem>
+                        <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
+                        <SelectItem value="4:3">4:3 (Landscape)</SelectItem>
+                        <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+                        <SelectItem value="5:4">5:4 (Landscape)</SelectItem>
+                        <SelectItem value="9:16">9:16 (Tall)</SelectItem>
+                        <SelectItem value="16:9">16:9 (Wide)</SelectItem>
+                        <SelectItem value="21:9">21:9 (Ultra Wide)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div>
-                  <Label htmlFor="image-count-edit" className="mb-2 block text-sm font-medium">
-                    Number of Images
-                  </Label>
-                  <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
-                    <SelectTrigger id="image-count-edit" className="bg-background">
-                      <SelectValue placeholder="Select number" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover">
-                      <SelectItem value="1">1 Image</SelectItem>
-                      <SelectItem value="3">3 Images</SelectItem>
-                      <SelectItem value="5">5 Images</SelectItem>
-                      <SelectItem value="9">9 Images</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Label htmlFor="image-count-edit" className="mb-2 block text-sm font-medium">
+                      Number of Images
+                    </Label>
+                    <Select value={imageCount.toString()} onValueChange={(v) => setImageCount(parseInt(v))}>
+                      <SelectTrigger id="image-count-edit" className="bg-background">
+                        <SelectValue placeholder="Select number" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="1">1 Image</SelectItem>
+                        <SelectItem value="3">3 Images</SelectItem>
+                        <SelectItem value="5">5 Images</SelectItem>
+                        <SelectItem value="9">9 Images</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div>
