@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, imageData, aspectRatio } = await req.json();
+    const { prompt, imageData, aspectRatio, pastedImages } = await req.json();
     
     if (!prompt) {
       return new Response(
@@ -53,17 +53,25 @@ serve(async (req) => {
       console.log("Image data length:", imageData.length, "characters");
     }
 
-    // Build content based on whether we're editing or generating
-    let content;
+    // Build content array for multimodal input
+    const content: any[] = [{ type: "text", text: prompt }];
+
+    // Add main image (for edit mode)
     if (imageData) {
-      // Image editing mode
-      content = [
-        { type: "text", text: prompt },
-        { type: "image_url", image_url: { url: imageData } }
-      ];
-    } else {
-      // Image generation mode
-      content = prompt;
+      content.push({
+        type: "image_url",
+        image_url: { url: imageData }
+      });
+    }
+
+    // Add pasted images (for both generate and edit modes)
+    if (pastedImages && Array.isArray(pastedImages)) {
+      pastedImages.forEach((img: string) => {
+        content.push({
+          type: "image_url",
+          image_url: { url: img }
+        });
+      });
     }
 
     const requestBody: any = {

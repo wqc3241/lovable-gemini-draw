@@ -25,6 +25,7 @@ const Index = () => {
   const [analyzedPrompt, setAnalyzedPrompt] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [promptImage, setPromptImage] = useState<string | null>(null);
+  const [pastedImages, setPastedImages] = useState<string[]>([]);
   const isMobile = useIsMobile();
 
   const examplePrompts = [
@@ -49,6 +50,37 @@ const Index = () => {
       setMode("edit");
     };
     reader.readAsDataURL(file);
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    // Check if clipboard contains an image
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      
+      if (item.type.startsWith('image/')) {
+        e.preventDefault(); // Prevent default paste behavior for images
+        
+        const file = item.getAsFile();
+        if (!file) continue;
+
+        // Convert to base64
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageData = event.target?.result as string;
+          setPastedImages(prev => [...prev, imageData]);
+          toast.success("Image pasted! It will be included with your prompt.");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleRemovePastedImage = (index: number) => {
+    setPastedImages(prev => prev.filter((_, i) => i !== index));
+    toast.success("Image removed");
   };
 
   const handleGenerate = async () => {
@@ -79,6 +111,7 @@ const Index = () => {
               prompt,
               imageData: mode === "edit" ? uploadedImage : null,
               aspectRatio,
+              pastedImages: pastedImages.length > 0 ? pastedImages : null,
             },
           });
           
@@ -135,6 +168,7 @@ const Index = () => {
             ? (mode === "edit" ? "Image edited successfully!" : "Image generated successfully!")
             : `Successfully generated ${successCount} of ${imageCount} images!`
         );
+        setPastedImages([]); // Clear pasted images after successful generation
       }
       
       if (failCount > 0 && imageCount > 1) {
@@ -379,7 +413,7 @@ const Index = () => {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
-            <Tabs value={mode} onValueChange={(v) => setMode(v as "generate" | "edit" | "prompt")} className="w-full">
+            <Tabs value={mode} onValueChange={(v) => { setMode(v as "generate" | "edit" | "prompt"); setPastedImages([]); }} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="generate" className="gap-2">
                 <Sparkles className="h-4 w-4" />
@@ -443,11 +477,38 @@ const Index = () => {
                   </Label>
                   <Textarea
                     id="prompt"
-                    placeholder="Describe the image you want to generate..."
+                    placeholder="Describe the image you want to generate... (You can paste images here with Ctrl+V)"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
+                    onPaste={handlePaste}
                     className="min-h-[120px] resize-none bg-background"
                   />
+
+                  {/* Display pasted images */}
+                  {pastedImages.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Pasted images ({pastedImages.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {pastedImages.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={img}
+                              alt={`Pasted ${idx + 1}`}
+                              className="h-20 w-20 rounded border border-border object-cover"
+                            />
+                            <button
+                              onClick={() => handleRemovePastedImage(idx)}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Button
@@ -564,11 +625,38 @@ const Index = () => {
                   </Label>
                   <Textarea
                     id="edit-prompt"
-                    placeholder="Describe how you want to edit the image..."
+                    placeholder="Describe how you want to edit the image... (You can paste reference images here with Ctrl+V)"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
+                    onPaste={handlePaste}
                     className="min-h-[120px] resize-none bg-background"
                   />
+
+                  {/* Display pasted images */}
+                  {pastedImages.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Reference images ({pastedImages.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {pastedImages.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={img}
+                              alt={`Reference ${idx + 1}`}
+                              className="h-20 w-20 rounded border border-border object-cover"
+                            />
+                            <button
+                              onClick={() => handleRemovePastedImage(idx)}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Button
