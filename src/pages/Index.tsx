@@ -151,6 +151,19 @@ const Index = () => {
     handleGenerate();
   };
 
+  // Helper function to convert base64 data URL to Blob
+  const dataURLtoBlob = (dataURL: string): Blob => {
+    const parts = dataURL.split(',');
+    const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+    const bstr = atob(parts[1]);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    return new Blob([u8arr], { type: mime });
+  };
+
   const handleDownloadAll = async () => {
     if (generatedImages.length === 0 || isDownloading) return;
     
@@ -159,9 +172,19 @@ const Index = () => {
     try {
       if (generatedImages.length === 1) {
         // Single image - download directly (no ZIP needed)
-        const response = await fetch(generatedImages[0]);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
+        let blob: Blob;
+        let blobUrl: string;
+        
+        // Check if it's a base64 data URL
+        if (generatedImages[0].startsWith('data:')) {
+          console.log('🔄 Converting base64 image to blob');
+          blob = dataURLtoBlob(generatedImages[0]);
+          blobUrl = URL.createObjectURL(blob);
+        } else {
+          const response = await fetch(generatedImages[0]);
+          blob = await response.blob();
+          blobUrl = URL.createObjectURL(blob);
+        }
         
         if (isMobile) {
           window.open(blobUrl, '_blank');
@@ -188,13 +211,24 @@ const Index = () => {
         // Fetch all images in parallel and add to ZIP
         const imagePromises = generatedImages.map(async (imageUrl, index) => {
           try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
+            let blob: Blob;
+            
+            // Check if it's a base64 data URL
+            if (imageUrl.startsWith('data:')) {
+              console.log(`🔄 Converting base64 image ${index + 1} to blob`);
+              blob = dataURLtoBlob(imageUrl);
+            } else {
+              // Regular HTTP URL - fetch it
+              console.log(`📥 Fetching image ${index + 1} from URL`);
+              const response = await fetch(imageUrl);
+              blob = await response.blob();
+            }
+            
             const filename = `ai-generated-${timestamp}-${index + 1}.png`;
             zip.file(filename, blob);
-            console.log(`✅ Added ${filename} to ZIP`);
+            console.log(`✅ Added ${filename} to ZIP (${(blob.size / 1024).toFixed(1)} KB)`);
           } catch (error) {
-            console.error(`❌ Failed to fetch image ${index + 1}:`, error);
+            console.error(`❌ Failed to process image ${index + 1}:`, error);
             throw error;
           }
         });
