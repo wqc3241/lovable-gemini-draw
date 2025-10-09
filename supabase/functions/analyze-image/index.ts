@@ -36,17 +36,17 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `Analyze this image and provide a highly detailed prompt that could be used to recreate this image with AI. Include:
+    const systemPrompt = `Analyze this image and provide a concise prompt that could be used to recreate this image with AI. For each category below, write 3-4 sentences maximum:
 
-1. SUBJECT DESCRIPTION: Main subject(s), their appearance, clothing, expressions
-2. POSE & COMPOSITION: Exact body positioning, angles, gestures, spatial relationships
-3. PHOTOGRAPHY STYLE: Lighting type (natural/studio/dramatic), mood, color grading
-4. CAMERA DETAILS: Angle (eye-level/high/low/dutch), shot type (close-up/medium/wide), perspective
-5. BACKGROUND & SETTING: Environment details, depth of field, background elements
-6. TECHNICAL DETAILS: Apparent camera settings, lens effects, post-processing style
-7. ARTISTIC STYLE: If applicable - photorealistic, cinematic, artistic, vintage, etc.
+1. SUBJECT DESCRIPTION: Main subject(s), their appearance, clothing, expressions (3-4 sentences)
+2. POSE & COMPOSITION: Body positioning, angles, gestures, spatial relationships (3-4 sentences)
+3. PHOTOGRAPHY STYLE: Lighting type, mood, color grading (3-4 sentences)
+4. CAMERA DETAILS: Camera angle, shot type, perspective (3-4 sentences)
+5. BACKGROUND & SETTING: Environment details, depth of field, background elements (3-4 sentences)
+6. TECHNICAL DETAILS: Camera settings, lens effects, post-processing style (3-4 sentences)
+7. ARTISTIC STYLE: Photorealistic, cinematic, artistic, vintage, etc. (3-4 sentences)
 
-Format the output as a comprehensive, coherent prompt that combines all these elements naturally. Make it detailed enough that an AI could recreate a very similar image.`;
+Format the output as a clear, structured prompt with each section labeled. Keep descriptions concise but detailed enough for accurate recreation. Total output should be around 20-25 sentences.`;
 
     console.log('=== 🚀 SENDING TO AI GATEWAY ===');
 
