@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -937,22 +938,22 @@ const Index = () => {
                 <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
                 <ul className="space-y-3">
                   <li>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       Privacy Policy
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       Terms of Service
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/cookie-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       Cookie Policy
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    <a href="mailto:info@cinely.ai" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       Contact Us
                     </a>
                   </li>
