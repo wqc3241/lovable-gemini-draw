@@ -758,7 +758,7 @@ const Index = () => {
 
         {/* Info Footer */}
         <footer className="mt-8 text-center text-sm text-muted-foreground">
-          <p>All Gemini models are free to use until October 13, 2025</p>
+          
         </footer>
       </div>
 
