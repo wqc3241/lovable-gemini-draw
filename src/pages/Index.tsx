@@ -118,24 +118,27 @@ const Index = () => {
       // Wait for all images to generate in parallel
       const results = await Promise.allSettled(generatePromises);
 
-      // Process all results
+      // Process all results and apply watermarks
       const newImages: string[] = [];
       let successCount = 0;
       let failCount = 0;
-      results.forEach((result, index) => {
+      
+      // Process watermarks in parallel
+      const watermarkPromises = results.map(async (result, index) => {
         if (result.status === 'fulfilled') {
-          const {
-            data,
-            error
-          } = result.value;
+          const { data, error } = result.value;
           if (!error && data?.imageUrl) {
-            newImages.push(data.imageUrl);
-            successCount++;
-            console.log(`✅ Image ${index + 1} generated successfully`);
+            try {
+              const watermarkedImage = await addWatermark(data.imageUrl);
+              console.log(`✅ Image ${index + 1} generated and watermarked successfully`);
+              return { success: true, image: watermarkedImage, index };
+            } catch (watermarkError) {
+              console.error(`⚠️ Image ${index + 1} watermark failed, using original:`, watermarkError);
+              return { success: true, image: data.imageUrl, index };
+            }
           } else {
-            failCount++;
             console.error(`❌ Image ${index + 1} failed:`, error || 'No imageUrl');
-
+            
             // Show detailed error for single image generation
             if (imageCount === 1) {
               if (data?.error && data?.details) {
@@ -147,10 +150,23 @@ const Index = () => {
                 toast.error(error?.message || "Failed to generate image");
               }
             }
+            return { success: false, error, index };
           }
         } else {
-          failCount++;
           console.error(`❌ Image ${index + 1} rejected:`, result.reason);
+          return { success: false, error: result.reason, index };
+        }
+      });
+      
+      const watermarkResults = await Promise.all(watermarkPromises);
+      
+      // Collect results
+      watermarkResults.forEach(result => {
+        if (result.success && result.image) {
+          newImages.push(result.image);
+          successCount++;
+        } else {
+          failCount++;
         }
       });
       setGeneratedImages(newImages);
@@ -188,6 +204,60 @@ const Index = () => {
       type: mime
     });
   };
+
+  // Add watermark to generated images
+  const addWatermark = async (imageDataUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw original image
+        ctx.drawImage(img, 0, 0);
+        
+        // Configure watermark text
+        const fontSize = Math.max(16, Math.floor(img.width * 0.025));
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        
+        // Add text shadow for better visibility
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        
+        // Position text in bottom-right with padding
+        const padding = Math.max(10, Math.floor(img.width * 0.015));
+        const x = canvas.width - padding;
+        const y = canvas.height - padding;
+        
+        ctx.fillText('AI Generated', x, y);
+        
+        // Convert canvas to data URL
+        resolve(canvas.toDataURL('image/png', 1.0));
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image for watermarking'));
+      };
+      
+      img.src = imageDataUrl;
+    });
+  };
+
   const handleDownloadAll = async () => {
     if (generatedImages.length === 0 || isDownloading) return;
     setIsDownloading(true);
