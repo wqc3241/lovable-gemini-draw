@@ -207,6 +207,48 @@ const Index = () => {
     });
   };
 
+  // Remove light background from logo
+  const removeLogoBackground = (logoImage: HTMLImageElement): HTMLCanvasElement => {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (!tempCtx) {
+      throw new Error('Could not get canvas context for background removal');
+    }
+    
+    tempCanvas.width = logoImage.width;
+    tempCanvas.height = logoImage.height;
+    
+    tempCtx.drawImage(logoImage, 0, 0);
+    
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    // Process each pixel (RGBA format)
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Calculate brightness (0-255)
+      const brightness = (r + g + b) / 3;
+      
+      // If pixel is very light (near white/gray background)
+      if (brightness > 240) {
+        data[i + 3] = 0; // Set alpha to fully transparent
+      }
+      // If pixel is somewhat light but not white
+      else if (brightness > 200) {
+        const fadeAmount = (brightness - 200) / 40;
+        data[i + 3] = data[i + 3] * (1 - fadeAmount * 0.8);
+      }
+      // Keep darker pixels (actual logo) as-is
+    }
+    
+    tempCtx.putImageData(imageData, 0, 0);
+    return tempCanvas;
+  };
+
   // Add watermark to generated images
   const addWatermark = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -241,6 +283,9 @@ const Index = () => {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
+        // Process logo to remove background
+        const processedLogo = removeLogoBackground(logo);
+        
         // Calculate logo size (15% of image width)
         const logoWidthPercentage = 0.15;
         const logoWidth = img.width * logoWidthPercentage;
@@ -255,8 +300,8 @@ const Index = () => {
         // Apply 50% transparency
         ctx.globalAlpha = 0.5;
         
-        // Draw logo
-        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+        // Draw processed logo without background
+        ctx.drawImage(processedLogo, x, y, logoWidth, logoHeight);
         
         // Reset alpha
         ctx.globalAlpha = 1.0;
