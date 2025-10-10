@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, C
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import cinellyLogoImg from "@/assets/cinely-logo.png";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -118,24 +120,27 @@ const Index = () => {
       // Wait for all images to generate in parallel
       const results = await Promise.allSettled(generatePromises);
 
-      // Process all results
+      // Process all results and apply watermarks
       const newImages: string[] = [];
       let successCount = 0;
       let failCount = 0;
-      results.forEach((result, index) => {
+      
+      // Process watermarks in parallel
+      const watermarkPromises = results.map(async (result, index) => {
         if (result.status === 'fulfilled') {
-          const {
-            data,
-            error
-          } = result.value;
+          const { data, error } = result.value;
           if (!error && data?.imageUrl) {
-            newImages.push(data.imageUrl);
-            successCount++;
-            console.log(`✅ Image ${index + 1} generated successfully`);
+            try {
+              const watermarkedImage = await addWatermark(data.imageUrl);
+              console.log(`✅ Image ${index + 1} generated and watermarked successfully`);
+              return { success: true, image: watermarkedImage, index };
+            } catch (watermarkError) {
+              console.error(`⚠️ Image ${index + 1} watermark failed, using original:`, watermarkError);
+              return { success: true, image: data.imageUrl, index };
+            }
           } else {
-            failCount++;
             console.error(`❌ Image ${index + 1} failed:`, error || 'No imageUrl');
-
+            
             // Show detailed error for single image generation
             if (imageCount === 1) {
               if (data?.error && data?.details) {
@@ -147,10 +152,23 @@ const Index = () => {
                 toast.error(error?.message || "Failed to generate image");
               }
             }
+            return { success: false, error, index };
           }
         } else {
-          failCount++;
           console.error(`❌ Image ${index + 1} rejected:`, result.reason);
+          return { success: false, error: result.reason, index };
+        }
+      });
+      
+      const watermarkResults = await Promise.all(watermarkPromises);
+      
+      // Collect results
+      watermarkResults.forEach(result => {
+        if (result.success && result.image) {
+          newImages.push(result.image);
+          successCount++;
+        } else {
+          failCount++;
         }
       });
       setGeneratedImages(newImages);
@@ -188,6 +206,77 @@ const Index = () => {
       type: mime
     });
   };
+
+
+  // Add watermark to generated images
+  const addWatermark = async (imageDataUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const logo = new Image();
+      
+      img.crossOrigin = "anonymous";
+      logo.crossOrigin = "anonymous";
+      
+      let imagesLoaded = 0;
+      const totalImages = 2;
+      
+      const onImageLoad = () => {
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+          applyWatermark();
+        }
+      };
+      
+      const applyWatermark = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw original image
+        ctx.drawImage(img, 0, 0);
+        
+        // Calculate logo size (15% of image width)
+        const logoWidthPercentage = 0.15;
+        const logoWidth = img.width * logoWidthPercentage;
+        const logoAspectRatio = logo.width / logo.height;
+        const logoHeight = logoWidth / logoAspectRatio;
+        
+        // Position in bottom-right with padding
+        const padding = Math.max(20, Math.floor(img.width * 0.02));
+        const x = canvas.width - logoWidth - padding;
+        const y = canvas.height - logoHeight - padding;
+        
+        // Apply 50% transparency
+        ctx.globalAlpha = 0.5;
+        
+        // Draw logo with native transparency
+        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+        
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
+        
+        // Convert to data URL
+        resolve(canvas.toDataURL('image/png', 1.0));
+      };
+      
+      img.onload = onImageLoad;
+      logo.onload = onImageLoad;
+      
+      img.onerror = () => reject(new Error('Failed to load source image'));
+      logo.onerror = () => reject(new Error('Failed to load watermark logo'));
+      
+      img.src = imageDataUrl;
+      logo.src = cinellyLogoImg;
+    });
+  };
+
   const handleDownloadAll = async () => {
     if (generatedImages.length === 0 || isDownloading) return;
     setIsDownloading(true);
@@ -395,18 +484,44 @@ const Index = () => {
       }
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <header className="mb-12 text-center">
+        <header className="mb-8 md:mb-12 text-center px-4">
+          {/* Logo/Brand Name */}
+          <div className="mb-4">
+            <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
+              Cinely.AI
+            </h1>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+              <Sparkles className="h-3 w-3 text-primary" />
+              <span className="text-xs font-medium text-primary">Powered by AI</span>
+            </div>
+          </div>
           
-          <h1 className="mb-3 bg-gradient-to-r from-primary via-accent-foreground to-primary bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
-            AI Image Generator
-          </h1>
-          <p className="text-lg text-muted-foreground">Transform your ideas into stunning images with AI in Batch</p>
+          {/* Tagline */}
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Transform your ideas into stunning images with AI-powered batch generation
+          </p>
+          
+          {/* Quick Stats */}
+          <div className="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-primary">1M+</span>
+              <span className="text-muted-foreground">Images Created</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-primary">Fast</span>
+              <span className="text-muted-foreground">Generation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-primary">Batch</span>
+              <span className="text-muted-foreground">Processing</span>
+            </div>
+          </div>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
             <Tabs value={mode} onValueChange={v => {
@@ -757,8 +872,135 @@ const Index = () => {
         </div>
 
         {/* Info Footer */}
-        <footer className="mt-8 text-center text-sm text-muted-foreground">
-          
+        <footer className="mt-16 border-t border-border pt-12 pb-8">
+          <div className="max-w-6xl mx-auto px-4">
+            {/* Main Footer Content */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+              {/* Brand Column */}
+              <div className="sm:col-span-2 lg:col-span-1">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent mb-3">
+                  Cinely.AI
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  AI-powered image generation platform. Create stunning visuals in seconds with advanced batch processing capabilities.
+                </p>
+                <div className="flex gap-3">
+                  <a href="#" className="h-9 w-9 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors">
+                    <span className="text-xs font-semibold">𝕏</span>
+                  </a>
+                  <a href="#" className="h-9 w-9 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors">
+                    <span className="text-xs font-semibold">in</span>
+                  </a>
+                  <a href="#" className="h-9 w-9 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors">
+                    <span className="text-xs font-semibold">IG</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Product Links */}
+              <div>
+                <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Product</h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a href="#generate" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Generate Images
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#edit" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Edit Images
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#prompt" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Image to Prompt
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#batch" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Batch Processing
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Resources Links */}
+              <div>
+                <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Documentation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      API Access
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Tutorials
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Community
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Legal Links */}
+              <div>
+                <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+                <ul className="space-y-3">
+                  <li>
+                    <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Terms of Service
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/cookie-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Cookie Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="mailto:info@cinely.ai" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Contact Us
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="pt-8 border-t border-border">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p className="text-xs text-muted-foreground text-center sm:text-left">
+                  © {new Date().getFullYear()} Cinely.AI. All rights reserved.
+                </p>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Status
+                  </a>
+                  <span>•</span>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Changelog
+                  </a>
+                  <span>•</span>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Support
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </footer>
       </div>
 
