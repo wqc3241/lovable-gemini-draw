@@ -124,23 +124,34 @@ const Index = () => {
       const newImages: string[] = [];
       let successCount = 0;
       let failCount = 0;
-      
+
       // Process watermarks in parallel
       const watermarkPromises = results.map(async (result, index) => {
         if (result.status === 'fulfilled') {
-          const { data, error } = result.value;
+          const {
+            data,
+            error
+          } = result.value;
           if (!error && data?.imageUrl) {
             try {
               const watermarkedImage = await addWatermark(data.imageUrl);
               console.log(`✅ Image ${index + 1} generated and watermarked successfully`);
-              return { success: true, image: watermarkedImage, index };
+              return {
+                success: true,
+                image: watermarkedImage,
+                index
+              };
             } catch (watermarkError) {
               console.error(`⚠️ Image ${index + 1} watermark failed, using original:`, watermarkError);
-              return { success: true, image: data.imageUrl, index };
+              return {
+                success: true,
+                image: data.imageUrl,
+                index
+              };
             }
           } else {
             console.error(`❌ Image ${index + 1} failed:`, error || 'No imageUrl');
-            
+
             // Show detailed error for single image generation
             if (imageCount === 1) {
               if (data?.error && data?.details) {
@@ -152,16 +163,23 @@ const Index = () => {
                 toast.error(error?.message || "Failed to generate image");
               }
             }
-            return { success: false, error, index };
+            return {
+              success: false,
+              error,
+              index
+            };
           }
         } else {
           console.error(`❌ Image ${index + 1} rejected:`, result.reason);
-          return { success: false, error: result.reason, index };
+          return {
+            success: false,
+            error: result.reason,
+            index
+          };
         }
       });
-      
       const watermarkResults = await Promise.all(watermarkPromises);
-      
+
       // Collect results
       watermarkResults.forEach(result => {
         if (result.success && result.image) {
@@ -207,76 +225,65 @@ const Index = () => {
     });
   };
 
-
   // Add watermark to generated images
   const addWatermark = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const logo = new Image();
-      
       img.crossOrigin = "anonymous";
       logo.crossOrigin = "anonymous";
-      
       let imagesLoaded = 0;
       const totalImages = 2;
-      
       const onImageLoad = () => {
         imagesLoaded++;
         if (imagesLoaded === totalImages) {
           applyWatermark();
         }
       };
-      
       const applyWatermark = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
         if (!ctx) {
           reject(new Error('Could not get canvas context'));
           return;
         }
-        
         canvas.width = img.width;
         canvas.height = img.height;
-        
+
         // Draw original image
         ctx.drawImage(img, 0, 0);
-        
+
         // Calculate logo size (15% of image width)
         const logoWidthPercentage = 0.15;
         const logoWidth = img.width * logoWidthPercentage;
         const logoAspectRatio = logo.width / logo.height;
         const logoHeight = logoWidth / logoAspectRatio;
-        
+
         // Position in bottom-right with padding
         const padding = Math.max(20, Math.floor(img.width * 0.02));
         const x = canvas.width - logoWidth - padding;
         const y = canvas.height - logoHeight - padding;
-        
+
         // Apply 50% transparency
         ctx.globalAlpha = 0.5;
-        
+
         // Draw logo with native transparency
         ctx.drawImage(logo, x, y, logoWidth, logoHeight);
-        
+
         // Reset alpha
         ctx.globalAlpha = 1.0;
-        
+
         // Convert to data URL
         resolve(canvas.toDataURL('image/png', 1.0));
       };
-      
       img.onload = onImageLoad;
       logo.onload = onImageLoad;
-      
       img.onerror = () => reject(new Error('Failed to load source image'));
       logo.onerror = () => reject(new Error('Failed to load watermark logo'));
-      
       img.src = imageDataUrl;
       logo.src = cinellyLogoImg;
     });
   };
-
   const handleDownloadAll = async () => {
     if (generatedImages.length === 0 || isDownloading) return;
     setIsDownloading(true);
@@ -493,16 +500,11 @@ const Index = () => {
             <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
               Cinely.AI
             </h1>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span className="text-xs font-medium text-primary">Powered by AI</span>
-            </div>
+            
           </div>
           
           {/* Tagline */}
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Transform your ideas into stunning images with AI-powered batch generation
-          </p>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">Transform ideas into stunning images in batch</p>
           
           {/* Quick Stats */}
           <div className="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
