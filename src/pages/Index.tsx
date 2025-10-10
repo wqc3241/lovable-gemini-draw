@@ -11,6 +11,7 @@ import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, C
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import cinellyLogoImg from "@/assets/cinely-logo.png";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -210,9 +211,22 @@ const Index = () => {
   const addWatermark = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = "anonymous";
+      const logo = new Image();
       
-      img.onload = () => {
+      img.crossOrigin = "anonymous";
+      logo.crossOrigin = "anonymous";
+      
+      let imagesLoaded = 0;
+      const totalImages = 2;
+      
+      const onImageLoad = () => {
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+          applyWatermark();
+        }
+      };
+      
+      const applyWatermark = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -227,35 +241,38 @@ const Index = () => {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
-        // Configure watermark text
-        const fontSize = Math.max(16, Math.floor(img.width * 0.025));
-        ctx.font = `${fontSize}px Arial`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
+        // Calculate logo size (15% of image width)
+        const logoWidthPercentage = 0.15;
+        const logoWidth = img.width * logoWidthPercentage;
+        const logoAspectRatio = logo.width / logo.height;
+        const logoHeight = logoWidth / logoAspectRatio;
         
-        // Add text shadow for better visibility
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
+        // Position in bottom-right with padding
+        const padding = Math.max(20, Math.floor(img.width * 0.02));
+        const x = canvas.width - logoWidth - padding;
+        const y = canvas.height - logoHeight - padding;
         
-        // Position text in bottom-right with padding
-        const padding = Math.max(10, Math.floor(img.width * 0.015));
-        const x = canvas.width - padding;
-        const y = canvas.height - padding;
+        // Apply 50% transparency
+        ctx.globalAlpha = 0.5;
         
-        ctx.fillText('AI Generated', x, y);
+        // Draw logo
+        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
         
-        // Convert canvas to data URL
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
+        
+        // Convert to data URL
         resolve(canvas.toDataURL('image/png', 1.0));
       };
       
-      img.onerror = () => {
-        reject(new Error('Failed to load image for watermarking'));
-      };
+      img.onload = onImageLoad;
+      logo.onload = onImageLoad;
+      
+      img.onerror = () => reject(new Error('Failed to load source image'));
+      logo.onerror = () => reject(new Error('Failed to load watermark logo'));
       
       img.src = imageDataUrl;
+      logo.src = cinellyLogoImg;
     });
   };
 
