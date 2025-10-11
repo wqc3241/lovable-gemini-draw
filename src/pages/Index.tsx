@@ -669,7 +669,7 @@ const Index = () => {
                         <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                           <button
                             onClick={() => setPrompt(example)}
-                            className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent h-full"
+                            className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
                           >
                             {example}
                           </button>
