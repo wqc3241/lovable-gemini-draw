@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,7 +41,33 @@ const Index = () => {
       }, 300);
     }
   };
-  const examplePrompts = ["A serene mountain landscape at sunset with vibrant orange and purple skies", "A futuristic city with flying cars and neon lights", "A cute robot playing with a kitten in a garden full of flowers", "An underwater scene with colorful coral reefs and tropical fish"];
+  // Full pool of example prompts
+  const ALL_EXAMPLE_PROMPTS = [
+    "A serene mountain landscape at sunset with vibrant orange and purple skies",
+    "A futuristic city with flying cars and neon lights",
+    "A cute robot playing with a kitten in a garden full of flowers",
+    "An underwater scene with colorful coral reefs and tropical fish",
+    "A mystical forest with glowing mushrooms and fairy lights",
+    "A steampunk airship flying through cloudy Victorian skies",
+    "A cozy coffee shop on a rainy autumn day with warm lighting",
+    "A majestic dragon perched on a crystalline mountain peak",
+    "A cyberpunk street market with holographic advertisements",
+    "A peaceful Japanese garden with cherry blossoms and koi pond",
+    "A space station orbiting a colorful nebula with distant planets",
+    "A medieval castle on a cliff overlooking stormy seas",
+    "A tropical beach at golden hour with palm trees and turquoise water",
+    "An enchanted library filled with floating books and magical artifacts",
+    "A vintage diner from the 1950s with neon signs and classic cars",
+    "A bioluminescent alien jungle with exotic plants and creatures",
+    "A snow-covered village during Christmas with twinkling lights",
+    "A surreal desert landscape with melting clocks and impossible geometry"
+  ];
+
+  // Randomly select 4 prompts on each page load
+  const examplePrompts = useMemo(() => {
+    const shuffled = [...ALL_EXAMPLE_PROMPTS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 4);
+  }, []);
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
