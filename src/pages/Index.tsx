@@ -667,7 +667,7 @@ const Index = () => {
                     >
                       <CarouselContent>
                         {examplePrompts.map((example, index) => (
-                          <CarouselItem key={index} className="basis-full md:basis-1/2 lg:basis-1/3 pl-0 sm:pl-4">
+                          <CarouselItem key={index} className="basis-full md:basis-1/2 lg:basis-1/3 pl-0 sm:pl-4 shrink grow md:shrink-0 md:grow-0">
                             <button
                               onClick={() => setPrompt(example)}
                               className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
