@@ -41,7 +41,30 @@ const Index = () => {
       }, 300);
     }
   };
-  const examplePrompts = ["A serene mountain landscape at sunset with vibrant orange and purple skies", "A futuristic city with flying cars and neon lights", "A cute robot playing with a kitten in a garden full of flowers", "An underwater scene with colorful coral reefs and tropical fish"];
+  // Expanded pool of example prompts for random selection
+  const allExamplePrompts = [
+    "A serene mountain landscape at sunset with vibrant orange and purple skies",
+    "A futuristic city with flying cars and neon lights",
+    "A cute robot playing with a kitten in a garden full of flowers",
+    "An underwater scene with colorful coral reefs and tropical fish",
+    "A mystical forest with glowing mushrooms and fireflies at night",
+    "A steampunk airship floating through cotton candy clouds",
+    "A cozy coffee shop on a rainy day with warm lighting",
+    "An ancient temple hidden in a jungle with overgrown vines",
+    "An astronaut cat exploring a galaxy full of colorful nebulas",
+    "A magical library with floating books and spiral staircases",
+    "A cyberpunk street market with holographic signs and vendors",
+    "A peaceful zen garden with cherry blossoms and koi pond"
+  ];
+  
+  // Function to get random prompts on page load
+  const getRandomPrompts = (count: number = 6) => {
+    const shuffled = [...allExamplePrompts].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+  
+  // Initialize with random prompts (runs once on component mount)
+  const [examplePrompts] = useState(() => getRandomPrompts(6));
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -630,13 +653,19 @@ const Index = () => {
                     </>}
                 </Button>
 
-                {/* Example Prompts */}
+                {/* Example Prompts - Horizontal Scroll */}
                 <div className="mt-4">
                   <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <div className="space-y-2">
-                    {examplePrompts.map((example, index) => <button key={index} onClick={() => setPrompt(example)} className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent">
-                        {example}
-                      </button>)}
+                  <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory max-w-full touch-action-pan-x">
+                    {examplePrompts.map((example, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setPrompt(example)}
+                        className="flex-shrink-0 w-[280px] sm:w-[320px] rounded-lg border border-border bg-background p-4 text-left text-sm transition-colors hover:border-primary hover:bg-accent snap-start"
+                      >
+                        <span className="line-clamp-3">{example}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
