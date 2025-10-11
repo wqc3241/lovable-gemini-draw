@@ -657,28 +657,30 @@ const Index = () => {
                 {/* Example Prompts Carousel */}
                 <div className="mt-4">
                   <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <Carousel
-                    opts={{
-                      align: "start",
-                      loop: false,
-                    }}
-                    className="w-full"
-                  >
-                    <CarouselContent>
-                      {examplePrompts.map((example, index) => (
-                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                          <button
-                            onClick={() => setPrompt(example)}
-                            className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
-                          >
-                            {example}
-                          </button>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  <CarouselPrevious className="hidden md:flex -left-4" />
-                  <CarouselNext className="hidden md:flex -right-4" />
-                  </Carousel>
+                  <div className="relative -mx-4 px-4">
+                    <Carousel
+                      opts={{
+                        align: "start",
+                        loop: false,
+                      }}
+                      className="w-full"
+                    >
+                      <CarouselContent>
+                        {examplePrompts.map((example, index) => (
+                          <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                            <button
+                              onClick={() => setPrompt(example)}
+                              className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
+                            >
+                              {example}
+                            </button>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="hidden md:flex -left-4" />
+                      <CarouselNext className="hidden md:flex -right-4" />
+                    </Carousel>
+                  </div>
                 </div>
               </TabsContent>
 
