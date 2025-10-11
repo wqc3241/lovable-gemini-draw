@@ -529,7 +529,7 @@ const Index = () => {
       }
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4">
