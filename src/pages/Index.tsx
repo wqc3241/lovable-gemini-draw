@@ -676,8 +676,8 @@ const Index = () => {
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="-left-4" />
-                    <CarouselNext className="-right-4" />
+                  <CarouselPrevious className="hidden md:flex -left-4" />
+                  <CarouselNext className="hidden md:flex -right-4" />
                   </Carousel>
                 </div>
               </TabsContent>
