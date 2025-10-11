@@ -548,7 +548,7 @@ const Index = () => {
           <ImageSlideshow />
         </header>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full px-4">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
             <Tabs value={mode} onValueChange={v => {
