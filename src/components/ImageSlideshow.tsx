@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const ImageSlideshow = () => {
   const [images, setImages] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Shuffle function using Fisher-Yates algorithm
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -24,6 +28,45 @@ const ImageSlideshow = () => {
     setImages(shuffledImages);
   }, []);
 
+  // Mouse drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - containerRef.current.offsetLeft);
+    setScrollLeft(containerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    containerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Touch drag handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!containerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - containerRef.current.offsetLeft);
+    setScrollLeft(containerRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    const x = e.touches[0].pageX - containerRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    containerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   if (images.length === 0) {
     return null; // Don't render if no images
   }
@@ -33,14 +76,25 @@ const ImageSlideshow = () => {
 
   return (
     <div className="mt-6 overflow-hidden">
-      <div className="relative h-[140px] flex items-center">
-        <div className="slideshow-container flex gap-4">
+      <div 
+        ref={containerRef}
+        className="relative h-[140px] flex items-center overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <div className={`slideshow-container flex gap-4 ${isDragging ? 'dragging' : ''}`}>
           {duplicatedImages.map((img, index) => (
             <img
               key={`${img}-${index}`}
               src={img}
               alt={`Slideshow image ${index + 1}`}
-              className="h-[120px] w-auto object-contain rounded-lg shadow-md flex-shrink-0"
+              className="h-[120px] w-auto object-contain rounded-lg shadow-md flex-shrink-0 pointer-events-none"
             />
           ))}
         </div>
@@ -51,6 +105,10 @@ const ImageSlideshow = () => {
       <style>{`
         .slideshow-container {
           animation: scroll-left ${images.length * 1.0}s linear infinite;
+        }
+
+        .slideshow-container.dragging {
+          animation-play-state: paused;
         }
 
         @keyframes scroll-left {
@@ -64,6 +122,10 @@ const ImageSlideshow = () => {
 
         .slideshow-container:hover {
           animation-play-state: paused;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </div>
