@@ -626,6 +626,7 @@ const Index = () => {
                         <SelectItem value="1">1 Image</SelectItem>
                         <SelectItem value="3">3 Images</SelectItem>
                         <SelectItem value="5">5 Images</SelectItem>
+                        <SelectItem value="7">7 Images</SelectItem>
                         <SelectItem value="9">9 Images</SelectItem>
                       </SelectContent>
                     </Select>
