@@ -47,7 +47,7 @@ const ImageSlideshow = () => {
       </div>
       <style>{`
         .slideshow-container {
-          animation: scroll-left ${images.length * 1.5}s linear infinite;
+          animation: scroll-left ${images.length * 1.0}s linear infinite;
         }
 
         @keyframes scroll-left {
