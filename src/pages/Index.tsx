@@ -809,8 +809,8 @@ const Index = () => {
           </Card>
 
           {/* Output Section */}
-          <Card ref={resultSectionRef} className="border-border bg-card p-6 shadow-lg">
-            <div className="mb-4">
+          <Card ref={resultSectionRef} className="border-border bg-card p-6 shadow-lg max-w-full overflow-hidden">
+            <div className="mb-4 max-w-full overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-semibold">
                   Result {generatedImages.length > 1 && `(${currentImageIndex + 1}/${generatedImages.length})`}
@@ -827,7 +827,7 @@ const Index = () => {
               </div>
               
               {/* Thumbnail carousel */}
-              {generatedImages.length > 1 && <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {generatedImages.length > 1 && <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide max-w-full touch-action-pan-x">
                   {generatedImages.map((img, index) => <button key={index} onClick={() => setCurrentImageIndex(index)} className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'}`}>
                       <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                     </button>)}
