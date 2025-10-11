@@ -657,7 +657,7 @@ const Index = () => {
                 {/* Example Prompts Carousel */}
                 <div className="mt-4">
                   <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <div className="relative -mx-4 px-4">
+                  <div className="relative -mx-6 px-6">
                     <Carousel
                       opts={{
                         align: "start",
