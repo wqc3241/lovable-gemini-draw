@@ -505,7 +505,7 @@ const Index = () => {
       }
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4">
@@ -524,7 +524,7 @@ const Index = () => {
           <ImageSlideshow />
         </header>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
             <Tabs value={mode} onValueChange={v => {
@@ -834,7 +834,7 @@ const Index = () => {
                 </div>}
             </div>
 
-            <div className="relative w-full overflow-hidden rounded-lg bg-muted/30 border border-border" style={generatedImages[currentImageIndex] && aspectRatio !== "auto" ? {
+            <div className="relative w-full max-w-full overflow-hidden rounded-lg bg-muted/30 border border-border" style={generatedImages[currentImageIndex] && aspectRatio !== "auto" ? {
             aspectRatio: getAspectRatioStyle(aspectRatio)
           } : {
             minHeight: "400px"
@@ -847,7 +847,7 @@ const Index = () => {
                 </p>
               </div>
             </div> : generatedImages.length > 0 ? <div className="w-full h-full cursor-pointer group relative">
-                  <img src={generatedImages[currentImageIndex]} alt={`Generated ${currentImageIndex + 1}`} className="w-full h-full object-contain" onClick={() => setIsFullscreenOpen(true)} />
+                  <img src={generatedImages[currentImageIndex]} alt={`Generated ${currentImageIndex + 1}`} className="w-full h-full max-w-full object-contain" onClick={() => setIsFullscreenOpen(true)} />
                   
                   {/* Navigation arrows */}
                   {generatedImages.length > 1 && <>
