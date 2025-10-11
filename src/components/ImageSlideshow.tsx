@@ -6,7 +6,10 @@ const ImageSlideshow = () => {
   useEffect(() => {
     // Dynamically import all images from slideshow-images folder
     const imageModules = import.meta.glob('/src/assets/slideshow-images/*.(jpg|jpeg|png|webp|gif)', { eager: true });
-    const imagePaths = Object.keys(imageModules).map(path => path.replace('/src', ''));
+    const imagePaths = Object.keys(imageModules).map(path => {
+      const module = imageModules[path] as { default: string };
+      return module.default;
+    });
     setImages(imagePaths);
   }, []);
 
