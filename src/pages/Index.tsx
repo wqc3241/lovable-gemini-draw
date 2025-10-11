@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import cinellyLogoImg from "@/assets/cinely-logo.png";
+import ImageSlideshow from "@/components/ImageSlideshow";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -506,21 +507,8 @@ const Index = () => {
           {/* Tagline */}
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">Transform ideas into stunning images in batch</p>
           
-          {/* Quick Stats */}
-          <div className="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-primary">1M+</span>
-              <span className="text-muted-foreground">Images Created</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-primary">Fast</span>
-              <span className="text-muted-foreground">Generation</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-primary">Batch</span>
-              <span className="text-muted-foreground">Processing</span>
-            </div>
-          </div>
+          {/* Image Slideshow */}
+          <ImageSlideshow />
         </header>
 
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12">

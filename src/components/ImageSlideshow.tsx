@@ -1,0 +1,56 @@
+import { useEffect, useState } from 'react';
+
+const ImageSlideshow = () => {
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Dynamically import all images from slideshow-images folder
+    const imageModules = import.meta.glob('/src/assets/slideshow-images/*.(jpg|jpeg|png|webp|gif)', { eager: true });
+    const imagePaths = Object.keys(imageModules).map(path => path.replace('/src', ''));
+    setImages(imagePaths);
+  }, []);
+
+  if (images.length === 0) {
+    return null; // Don't render if no images
+  }
+
+  // Duplicate images for seamless infinite loop
+  const duplicatedImages = [...images, ...images];
+
+  return (
+    <div className="mt-6 overflow-hidden">
+      <div className="relative h-[140px] flex items-center">
+        <div className="slideshow-container flex gap-4">
+          {duplicatedImages.map((img, index) => (
+            <img
+              key={`${img}-${index}`}
+              src={img}
+              alt={`Slideshow image ${index + 1}`}
+              className="h-[120px] w-auto object-contain rounded-lg shadow-md flex-shrink-0"
+            />
+          ))}
+        </div>
+      </div>
+      <style>{`
+        .slideshow-container {
+          animation: scroll-left ${images.length * 3}s linear infinite;
+        }
+
+        @keyframes scroll-left {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .slideshow-container:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default ImageSlideshow;
