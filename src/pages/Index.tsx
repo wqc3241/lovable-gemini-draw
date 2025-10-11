@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, ChevronRight, FileText, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -41,7 +42,30 @@ const Index = () => {
       }, 300);
     }
   };
-  const examplePrompts = ["A serene mountain landscape at sunset with vibrant orange and purple skies", "A futuristic city with flying cars and neon lights", "A cute robot playing with a kitten in a garden full of flowers", "An underwater scene with colorful coral reefs and tropical fish"];
+  // All available example prompts
+  const allExamplePrompts = [
+    "A serene mountain landscape at sunset with vibrant orange and purple skies",
+    "A futuristic city with flying cars and neon lights",
+    "A cute robot playing with a kitten in a garden full of flowers",
+    "An underwater scene with colorful coral reefs and tropical fish",
+    "A mystical forest with glowing mushrooms and fireflies at night",
+    "A steampunk airship floating through cotton candy clouds",
+    "A cozy coffee shop on a rainy day with warm lighting",
+    "An ancient temple hidden in a jungle with overgrown vines",
+    "A magical library with floating books and spiral staircases",
+    "A cyberpunk street market with holographic signs and vendors",
+    "A peaceful zen garden with cherry blossoms and koi pond",
+    "An astronaut exploring a colorful alien planet landscape"
+  ];
+
+  // Function to get random prompts
+  const getRandomPrompts = (count: number = 5) => {
+    const shuffled = [...allExamplePrompts].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
+  // Initialize with random prompts (runs once on component mount)
+  const [examplePrompts] = useState(() => getRandomPrompts(5));
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -630,14 +654,31 @@ const Index = () => {
                     </>}
                 </Button>
 
-                {/* Example Prompts */}
+                {/* Example Prompts Carousel */}
                 <div className="mt-4">
                   <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <div className="space-y-2">
-                    {examplePrompts.map((example, index) => <button key={index} onClick={() => setPrompt(example)} className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent">
-                        {example}
-                      </button>)}
-                  </div>
+                  <Carousel
+                    opts={{
+                      align: "start",
+                      loop: false,
+                    }}
+                    className="w-full"
+                  >
+                    <CarouselContent>
+                      {examplePrompts.map((example, index) => (
+                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                          <button
+                            onClick={() => setPrompt(example)}
+                            className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent h-full"
+                          >
+                            {example}
+                          </button>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="-left-4" />
+                    <CarouselNext className="-right-4" />
+                  </Carousel>
                 </div>
               </TabsContent>
 
