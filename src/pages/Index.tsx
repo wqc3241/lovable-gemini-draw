@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Loader2, Sparkles, Download, Upload, Image as ImageIcon, ChevronLeft, ChevronRight, FileText, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -42,30 +41,7 @@ const Index = () => {
       }, 300);
     }
   };
-  // All available example prompts
-  const allExamplePrompts = [
-    "A serene mountain landscape at sunset with vibrant orange and purple skies",
-    "A futuristic city with flying cars and neon lights",
-    "A cute robot playing with a kitten in a garden full of flowers",
-    "An underwater scene with colorful coral reefs and tropical fish",
-    "A mystical forest with glowing mushrooms and fireflies at night",
-    "A steampunk airship floating through cotton candy clouds",
-    "A cozy coffee shop on a rainy day with warm lighting",
-    "An ancient temple hidden in a jungle with overgrown vines",
-    "A magical library with floating books and spiral staircases",
-    "A cyberpunk street market with holographic signs and vendors",
-    "A peaceful zen garden with cherry blossoms and koi pond",
-    "An astronaut exploring a colorful alien planet landscape"
-  ];
-
-  // Function to get random prompts
-  const getRandomPrompts = (count: number = 5) => {
-    const shuffled = [...allExamplePrompts].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
-  };
-
-  // Initialize with random prompts (runs once on component mount)
-  const [examplePrompts] = useState(() => getRandomPrompts(5));
+  const examplePrompts = ["A serene mountain landscape at sunset with vibrant orange and purple skies", "A futuristic city with flying cars and neon lights", "A cute robot playing with a kitten in a garden full of flowers", "An underwater scene with colorful coral reefs and tropical fish"];
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -529,7 +505,7 @@ const Index = () => {
       }
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4">
@@ -548,7 +524,7 @@ const Index = () => {
           <ImageSlideshow />
         </header>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full px-4">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full">
           {/* Input Section */}
           <Card className="border-border bg-card p-6 shadow-lg">
             <Tabs value={mode} onValueChange={v => {
@@ -654,32 +630,13 @@ const Index = () => {
                     </>}
                 </Button>
 
-                {/* Example Prompts Carousel */}
+                {/* Example Prompts */}
                 <div className="mt-4">
                   <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <div className="relative -mx-6 px-0 sm:px-6 [&_.flex]:-ml-0 sm:[&_.flex]:-ml-4">
-                    <Carousel
-                      opts={{
-                        align: "start",
-                        loop: false,
-                      }}
-                      className="w-full"
-                    >
-                      <CarouselContent>
-                        {examplePrompts.map((example, index) => (
-                          <CarouselItem key={index} className="basis-full md:basis-1/2 lg:basis-1/3 pl-0 sm:pl-4 shrink grow md:shrink-0 md:grow-0">
-                            <button
-                              onClick={() => setPrompt(example)}
-                              className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
-                            >
-                              {example}
-                            </button>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious className="hidden md:flex -left-4" />
-                      <CarouselNext className="hidden md:flex -right-4" />
-                    </Carousel>
+                  <div className="space-y-2">
+                    {examplePrompts.map((example, index) => <button key={index} onClick={() => setPrompt(example)} className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent">
+                        {example}
+                      </button>)}
                   </div>
                 </div>
               </TabsContent>
