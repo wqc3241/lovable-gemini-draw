@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +29,18 @@ const Index = () => {
   const [promptImage, setPromptImage] = useState<string | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const isMobile = useIsMobile();
+  const resultSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToResults = () => {
+    if (isMobile && resultSectionRef.current) {
+      setTimeout(() => {
+        resultSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 300);
+    }
+  };
   const examplePrompts = ["A serene mountain landscape at sunset with vibrant orange and purple skies", "A futuristic city with flying cars and neon lights", "A cute robot playing with a kitten in a garden full of flowers", "An underwater scene with colorful coral reefs and tropical fish"];
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -194,6 +206,7 @@ const Index = () => {
       if (successCount > 0) {
         toast.success(imageCount === 1 ? mode === "edit" ? "Image edited successfully!" : "Image generated successfully!" : `Successfully generated ${successCount} of ${imageCount} images!`);
         setPastedImages([]); // Clear pasted images after successful generation
+        scrollToResults(); // Auto-scroll to results on mobile
       }
       if (failCount > 0 && imageCount > 1) {
         toast.error(`${failCount} image(s) failed to generate`);
@@ -796,7 +809,7 @@ const Index = () => {
           </Card>
 
           {/* Output Section */}
-          <Card className="border-border bg-card p-6 shadow-lg">
+          <Card ref={resultSectionRef} className="border-border bg-card p-6 shadow-lg">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-semibold">
