@@ -655,15 +655,15 @@ const Index = () => {
 
                 {/* Example Prompts - Horizontal Scroll */}
                 <div className="mt-4">
-                  <p className="mb-3 text-sm font-medium text-muted-foreground">Try these examples:</p>
-                  <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory max-w-full touch-action-pan-x">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">Try these examples:</p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                     {examplePrompts.map((example, index) => (
                       <button
                         key={index}
                         onClick={() => setPrompt(example)}
-                        className="flex-shrink-0 w-[280px] sm:w-[320px] rounded-lg border border-border bg-background p-4 text-left text-sm transition-colors hover:border-primary hover:bg-accent snap-start"
+                        className="flex-shrink-0 w-[240px] sm:w-[260px] rounded-md border border-border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-primary hover:bg-accent"
                       >
-                        <span className="line-clamp-3">{example}</span>
+                        <span className="line-clamp-2">{example}</span>
                       </button>
                     ))}
                   </div>
