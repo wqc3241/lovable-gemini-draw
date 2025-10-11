@@ -340,6 +340,16 @@ const Index = () => {
   const handleDownloadAll = async () => {
     if (generatedImages.length === 0 || isDownloading) return;
     setIsDownloading(true);
+    
+    // Helper function to format date as MM/DD/YY
+    const formatDate = (timestamp: number) => {
+      const date = new Date(timestamp);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      return `${month}/${day}/${year}`;
+    };
+    
     try {
       if (generatedImages.length === 1) {
         // Single image - download directly (no ZIP needed)
@@ -362,7 +372,8 @@ const Index = () => {
         } else {
           const link = document.createElement("a");
           link.href = blobUrl;
-          link.download = `ai-generated-${Date.now()}.png`;
+          const timestamp = Date.now();
+          link.download = `cinely_generated_${formatDate(timestamp)}_${timestamp}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -391,7 +402,7 @@ const Index = () => {
               const response = await fetch(imageUrl);
               blob = await response.blob();
             }
-            const filename = `ai-generated-${timestamp}-${index + 1}.png`;
+            const filename = `cinely_generated_${formatDate(timestamp)}_${timestamp}_${index + 1}.png`;
             zip.file(filename, blob);
             console.log(`✅ Added ${filename} to ZIP (${(blob.size / 1024).toFixed(1)} KB)`);
           } catch (error) {
