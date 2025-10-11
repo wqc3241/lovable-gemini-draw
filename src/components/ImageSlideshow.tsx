@@ -3,6 +3,16 @@ import { useEffect, useState } from 'react';
 const ImageSlideshow = () => {
   const [images, setImages] = useState<string[]>([]);
 
+  // Shuffle function using Fisher-Yates algorithm
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   useEffect(() => {
     // Dynamically import all images from slideshow-images folder
     const imageModules = import.meta.glob('/src/assets/slideshow-images/*.(jpg|jpeg|png|webp|gif)', { eager: true });
@@ -10,7 +20,8 @@ const ImageSlideshow = () => {
       const module = imageModules[path] as { default: string };
       return module.default;
     });
-    setImages(imagePaths);
+    const shuffledImages = shuffleArray(imagePaths);
+    setImages(shuffledImages);
   }, []);
 
   if (images.length === 0) {
@@ -36,7 +47,7 @@ const ImageSlideshow = () => {
       </div>
       <style>{`
         .slideshow-container {
-          animation: scroll-left ${images.length * 3}s linear infinite;
+          animation: scroll-left ${images.length * 1.5}s linear infinite;
         }
 
         @keyframes scroll-left {
