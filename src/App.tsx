@@ -9,6 +9,10 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
+import GenerateImagesGuide from "./pages/GenerateImagesGuide";
+import EditImagesGuide from "./pages/EditImagesGuide";
+import ImageToPromptGuide from "./pages/ImageToPromptGuide";
+import BatchProcessingGuide from "./pages/BatchProcessingGuide";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +33,10 @@ const App = () => {
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/guide/generate-images" element={<GenerateImagesGuide />} />
+            <Route path="/guide/edit-images" element={<EditImagesGuide />} />
+            <Route path="/guide/image-to-prompt" element={<ImageToPromptGuide />} />
+            <Route path="/guide/batch-processing" element={<BatchProcessingGuide />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

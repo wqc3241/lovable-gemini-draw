@@ -1119,27 +1119,27 @@ const Index = () => {
 
               {/* Product Links */}
               <div>
-                <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Product</h4>
+                <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Guides</h4>
                 <ul className="space-y-3">
                   <li>
-                    <a href="#generate" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      Generate Images
-                    </a>
+                    <Link to="/guide/generate-images" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Generate Images Guide
+                    </Link>
                   </li>
                   <li>
-                    <a href="#edit" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      Edit Images
-                    </a>
+                    <Link to="/guide/edit-images" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Edit Images Guide
+                    </Link>
                   </li>
                   <li>
-                    <a href="#prompt" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      Image to Prompt
-                    </a>
+                    <Link to="/guide/image-to-prompt" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Image to Prompt Guide
+                    </Link>
                   </li>
                   <li>
-                    <a href="#batch" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      Batch Processing
-                    </a>
+                    <Link to="/guide/batch-processing" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Batch Processing Guide
+                    </Link>
                   </li>
                 </ul>
               </div>
