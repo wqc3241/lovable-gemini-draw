@@ -5,10 +5,19 @@ import { GuideStep } from "@/components/GuideStep";
 import { FeatureCard } from "@/components/FeatureCard";
 import { TipCallout } from "@/components/TipCallout";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function GenerateImagesGuide() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Generate AI Images - Complete Guide"
+        description="Learn how to create stunning AI-generated images with text prompts. Step-by-step tutorial covering prompt engineering, aspect ratios, and batch generation."
+        keywords={['AI image generation', 'text to image tutorial', 'AI art guide', 'prompt engineering', 'create AI images', 'AI image generator guide']}
+        url="https://cinely.ai/guide/generate-images"
+        type="article"
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
@@ -232,5 +241,6 @@ export default function GenerateImagesGuide() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

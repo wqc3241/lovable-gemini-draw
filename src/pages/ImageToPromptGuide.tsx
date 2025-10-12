@@ -5,10 +5,19 @@ import { GuideStep } from "@/components/GuideStep";
 import { FeatureCard } from "@/components/FeatureCard";
 import { TipCallout } from "@/components/TipCallout";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function ImageToPromptGuide() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Image to Prompt - Complete Guide"
+        description="Reverse engineer any image into a detailed text prompt. Learn how to analyze images with AI and extract prompts for image generation and learning."
+        keywords={['image to prompt', 'reverse image analysis', 'AI image description', 'prompt extraction', 'prompt engineering', 'analyze images']}
+        url="https://cinely.ai/guide/image-to-prompt"
+        type="article"
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
@@ -277,5 +286,6 @@ export default function ImageToPromptGuide() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

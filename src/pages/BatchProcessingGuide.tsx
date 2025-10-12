@@ -5,10 +5,19 @@ import { GuideStep } from "@/components/GuideStep";
 import { FeatureCard } from "@/components/FeatureCard";
 import { TipCallout } from "@/components/TipCallout";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function BatchProcessingGuide() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Batch Processing Guide - Generate Multiple Images"
+        description="Generate multiple image variations simultaneously. Learn how to use batch processing to save time, compare results, and create the perfect AI images."
+        keywords={['batch image processing', 'bulk image generation', 'multiple AI images', 'batch AI generation', 'parallel image processing', 'generate multiple images']}
+        url="https://cinely.ai/guide/batch-processing"
+        type="article"
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
@@ -322,5 +331,6 @@ export default function BatchProcessingGuide() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

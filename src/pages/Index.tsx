@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
+import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -553,7 +554,12 @@ const Index = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
+    <>
+      <SEO 
+        keywords={['AI image generator', 'text to image', 'AI art', 'image editing', 'AI tools', 'batch image processing', 'prompt engineering', 'AI visual studio', 'cinematic AI images']}
+        url="https://cinely.ai"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4">
@@ -1281,6 +1287,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 };
 export default Index;

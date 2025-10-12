@@ -5,10 +5,19 @@ import { GuideStep } from "@/components/GuideStep";
 import { FeatureCard } from "@/components/FeatureCard";
 import { TipCallout } from "@/components/TipCallout";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function EditImagesGuide() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Edit Images with AI - Complete Guide"
+        description="Transform existing images with AI-powered editing. Learn how to change styles, add elements, and completely reimagine your photos with step-by-step instructions."
+        keywords={['AI image editing', 'edit images with AI', 'image transformation', 'style transfer', 'AI photo editor', 'image modification guide']}
+        url="https://cinely.ai/guide/edit-images"
+        type="article"
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
@@ -247,5 +256,6 @@ export default function EditImagesGuide() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
