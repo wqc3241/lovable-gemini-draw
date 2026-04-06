@@ -193,12 +193,12 @@ const Pricing = () => {
               return (
                 <Card
                   key={plan.name}
-                  className={`relative p-6 flex flex-col ${
+                  className={`relative p-6 flex flex-col border-0 rounded-lg ${
                     plan.accent
-                      ? "border-primary shadow-lg ring-2 ring-primary/20"
+                      ? "bg-surface-high shadow-glow ring-1 ring-primary/30"
                       : isCurrent
-                      ? "border-primary/50 ring-1 ring-primary/10"
-                      : "border-border"
+                      ? "bg-surface-high ring-1 ring-primary/15"
+                      : "bg-card"
                   }`}
                 >
                   {plan.popular && (
