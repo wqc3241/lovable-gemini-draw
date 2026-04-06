@@ -1,14 +1,18 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, Sparkles, Zap, Crown } from "lucide-react";
+import { ArrowLeft, Check, Sparkles, Zap, Crown, Loader2, Settings } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import UserMenu from "@/components/UserMenu";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const plans = [
   {
     name: "Free",
+    key: "free",
     price: "$0",
     period: "forever",
     icon: Sparkles,
@@ -21,12 +25,12 @@ const plans = [
       "7-day history",
     ],
     limitations: ["No Pro or Nano Banana 2 models", "No priority queue"],
-    cta: "Current Plan",
     popular: false,
     accent: false,
   },
   {
     name: "Pro",
+    key: "pro",
     price: "$9.99",
     period: "/month",
     icon: Zap,
@@ -39,12 +43,12 @@ const plans = [
       "14-day history",
     ],
     limitations: [],
-    cta: "Upgrade to Pro",
     popular: true,
     accent: true,
   },
   {
     name: "Premium",
+    key: "premium",
     price: "$24.99",
     period: "/month",
     icon: Crown,
@@ -58,18 +62,91 @@ const plans = [
       "Priority queue",
     ],
     limitations: [],
-    cta: "Go Premium",
     popular: false,
     accent: false,
   },
 ];
 
 const Pricing = () => {
+  const [currentPlan, setCurrentPlan] = useState("free");
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session) checkSubscription();
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session) checkSubscription();
+    });
+
+    // Check for success/cancel params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      toast.success("Subscription activated! Checking status...");
+      setTimeout(checkSubscription, 2000);
+    }
+    if (params.get("canceled") === "true") {
+      toast.info("Checkout canceled");
+    }
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkSubscription = async () => {
+    setIsCheckingSubscription(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      if (data?.plan) setCurrentPlan(data.plan);
+    } catch (e) {
+      console.error("Failed to check subscription:", e);
+    } finally {
+      setIsCheckingSubscription(false);
+    }
+  };
+
+  const handleCheckout = async (plan: string) => {
+    if (!user) {
+      toast.error("Please sign in first");
+      return;
+    }
+    setIsLoading(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to start checkout");
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setIsLoading("manage");
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to open subscription management");
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   return (
     <>
       <SEO
         title="Pricing - Cinely.AI"
-        description="Choose the perfect plan for your AI image generation needs. Free, Pro, and Premium tiers available."
+        description="Choose the perfect plan for your AI image generation needs."
         url="https://cinely.ai/pricing"
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
@@ -96,24 +173,42 @@ const Pricing = () => {
             <Card className="inline-flex items-center gap-3 px-6 py-3 border-primary/20 bg-primary/5">
               <span className="text-sm font-medium">🎨 Remove watermarks on any plan</span>
               <Badge variant="secondary" className="font-bold">+$2/mo</Badge>
+              {user && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleCheckout("watermark_removal")}
+                  disabled={isLoading === "watermark_removal"}
+                >
+                  {isLoading === "watermark_removal" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+                </Button>
+              )}
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3 mb-16">
+          <div className="grid gap-6 md:grid-cols-3 mb-8">
             {plans.map((plan) => {
               const Icon = plan.icon;
+              const isCurrent = currentPlan === plan.key;
               return (
                 <Card
                   key={plan.name}
                   className={`relative p-6 flex flex-col ${
                     plan.accent
                       ? "border-primary shadow-lg ring-2 ring-primary/20"
+                      : isCurrent
+                      ? "border-primary/50 ring-1 ring-primary/10"
                       : "border-border"
                   }`}
                 >
                   {plan.popular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4">
                       Most Popular
+                    </Badge>
+                  )}
+                  {isCurrent && (
+                    <Badge variant="outline" className="absolute -top-3 right-4 border-primary text-primary px-3">
+                      Your Plan
                     </Badge>
                   )}
 
@@ -145,17 +240,47 @@ const Pricing = () => {
                     ))}
                   </ul>
 
-                  <Button
-                    className={`w-full ${plan.accent ? "" : "variant-outline"}`}
-                    variant={plan.accent ? "default" : "outline"}
-                    size="lg"
-                  >
-                    {plan.cta}
-                  </Button>
+                  {isCurrent ? (
+                    <Button variant="outline" size="lg" disabled className="w-full">
+                      Current Plan
+                    </Button>
+                  ) : plan.key === "free" ? (
+                    <Button variant="outline" size="lg" disabled className="w-full">
+                      Free Forever
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      variant={plan.accent ? "default" : "outline"}
+                      size="lg"
+                      onClick={() => handleCheckout(plan.key)}
+                      disabled={isLoading === plan.key || !user}
+                    >
+                      {isLoading === plan.key ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      {!user ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
+                    </Button>
+                  )}
                 </Card>
               );
             })}
           </div>
+
+          {/* Manage subscription button */}
+          {user && currentPlan !== "free" && (
+            <div className="text-center mb-12">
+              <Button
+                variant="outline"
+                onClick={handleManageSubscription}
+                disabled={isLoading === "manage"}
+                className="gap-2"
+              >
+                {isLoading === "manage" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings className="h-4 w-4" />}
+                Manage Subscription
+              </Button>
+            </div>
+          )}
 
           {/* FAQ */}
           <div className="max-w-2xl mx-auto mb-12">
