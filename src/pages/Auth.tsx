@@ -90,7 +90,7 @@ const Auth = () => {
         description="Sign in or create an account to save your generation history."
         url="https://cinely.ai/auth"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
