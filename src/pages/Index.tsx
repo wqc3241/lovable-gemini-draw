@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,7 @@ import {
   Crown,
   Check,
   X,
+  Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -50,6 +51,24 @@ const Index = () => {
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
+
+  // Real-time public stats
+  const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
+
+  const fetchStats = useCallback(async () => {
+    const { data } = await supabase.rpc("get_public_stats" as any);
+    if (data) setStats(data as { total_users: number; total_images: number });
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    const channel = supabase
+      .channel("public-stats")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "generation_history" }, fetchStats)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchStats]);
 
   const scrollToResults = () => {
     if (isMobile && resultSectionRef.current) {
@@ -1187,6 +1206,22 @@ const Index = () => {
             </div>
           </Card>
         </div>
+
+        {/* Real-time Stats */}
+        <section className="mt-16 max-w-3xl mx-auto px-4">
+          <div className="grid grid-cols-2 gap-6">
+            <Card className="p-6 text-center border-border bg-card/50 backdrop-blur-sm">
+              <Users className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="text-4xl font-extrabold font-display tabular-nums">{stats.total_users.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Users Creating</p>
+            </Card>
+            <Card className="p-6 text-center border-border bg-card/50 backdrop-blur-sm">
+              <ImageIcon className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="text-4xl font-extrabold font-display tabular-nums">{stats.total_images.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Images Generated</p>
+            </Card>
+          </div>
+        </section>
 
         {/* Pricing Section */}
         <section className="mt-20 max-w-5xl mx-auto px-4">
