@@ -110,28 +110,37 @@ export type Database = {
       user_credits: {
         Row: {
           created_at: string
+          credits_reset_date: string
           daily_generations_used: number
           daily_prompts_used: number
           id: string
           last_reset_date: string
+          monthly_credits_remaining: number
+          monthly_credits_total: number
           user_id: string
           watermark_removed: boolean
         }
         Insert: {
           created_at?: string
+          credits_reset_date?: string
           daily_generations_used?: number
           daily_prompts_used?: number
           id?: string
           last_reset_date?: string
+          monthly_credits_remaining?: number
+          monthly_credits_total?: number
           user_id: string
           watermark_removed?: boolean
         }
         Update: {
           created_at?: string
+          credits_reset_date?: string
           daily_generations_used?: number
           daily_prompts_used?: number
           id?: string
           last_reset_date?: string
+          monthly_credits_remaining?: number
+          monthly_credits_total?: number
           user_id?: string
           watermark_removed?: boolean
         }

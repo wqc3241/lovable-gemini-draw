@@ -6,33 +6,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLAN_LIMITS: Record<string, { daily: number; promptDaily: number; models: string[]; maxBatch: number }> = {
-  free: {
-    daily: 3,
-    promptDaily: 5,
-    models: ["google/gemini-2.5-flash-image-preview"],
-    maxBatch: 5,
-  },
-  pro: {
-    daily: 20,
-    promptDaily: 20,
-    models: [
-      "google/gemini-2.5-flash-image-preview",
-      "google/gemini-3.1-flash-image-preview",
-      "google/gemini-3-pro-image-preview",
-    ],
-    maxBatch: 9,
-  },
-  premium: {
-    daily: Infinity,
-    promptDaily: Infinity,
-    models: [
-      "google/gemini-2.5-flash-image-preview",
-      "google/gemini-3.1-flash-image-preview",
-      "google/gemini-3-pro-image-preview",
-    ],
-    maxBatch: 9,
-  },
+const PLAN_CREDITS: Record<string, number> = {
+  free: 15,
+  pro: 150,
+  premium: 500,
+};
+
+const CREDIT_COSTS: Record<string, number> = {
+  "google/gemini-2.5-flash-image-preview": 0.25,
+  "google/gemini-3.1-flash-image-preview": 0.50,
+  "google/gemini-3-pro-image-preview": 0.75,
+};
+
+const PROMPT_COST = 0.25;
+
+const PLAN_MODELS: Record<string, string[]> = {
+  free: ["google/gemini-2.5-flash-image-preview"],
+  pro: [
+    "google/gemini-2.5-flash-image-preview",
+    "google/gemini-3.1-flash-image-preview",
+    "google/gemini-3-pro-image-preview",
+  ],
+  premium: [
+    "google/gemini-2.5-flash-image-preview",
+    "google/gemini-3.1-flash-image-preview",
+    "google/gemini-3-pro-image-preview",
+  ],
+};
+
+const MAX_BATCH: Record<string, number> = {
+  free: 5,
+  pro: 9,
+  premium: 9,
 };
 
 serve(async (req) => {
@@ -53,7 +58,6 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get user from JWT
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
@@ -64,7 +68,6 @@ serve(async (req) => {
     }
 
     const { action, model, imageCount, generationType } = await req.json();
-    const isPromptMode = generationType === "prompt";
 
     // Get subscription
     const { data: subscription } = await supabase
@@ -74,55 +77,69 @@ serve(async (req) => {
       .single();
 
     const plan = subscription?.plan || "free";
-    const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+    const totalCredits = PLAN_CREDITS[plan] || PLAN_CREDITS.free;
+    const allowedModels = PLAN_MODELS[plan] || PLAN_MODELS.free;
+    const maxBatch = MAX_BATCH[plan] || MAX_BATCH.free;
 
-    if (action === "check") {
-      // Get credits
-      const { data: credits } = await supabase
+    // Get or create credits row
+    let { data: credits } = await supabase
+      .from("user_credits")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!credits) {
+      await supabase.from("user_credits").insert({ user_id: user.id });
+      const { data: newCredits } = await supabase
         .from("user_credits")
         .select("*")
         .eq("user_id", user.id)
         .single();
+      credits = newCredits;
+    }
 
-      const today = new Date().toISOString().split("T")[0];
-      let used = credits?.daily_generations_used || 0;
-      let promptsUsed = credits?.daily_prompts_used || 0;
+    // Monthly reset: if 30+ days since credits_reset_date, reset credits
+    const resetDate = new Date(credits.credits_reset_date);
+    const now = new Date();
+    const daysSinceReset = Math.floor((now.getTime() - resetDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceReset >= 30) {
+      const newTotal = totalCredits;
+      await supabase
+        .from("user_credits")
+        .update({
+          monthly_credits_remaining: newTotal,
+          monthly_credits_total: newTotal,
+          credits_reset_date: now.toISOString().split("T")[0],
+        })
+        .eq("user_id", user.id);
+      credits.monthly_credits_remaining = newTotal;
+      credits.monthly_credits_total = newTotal;
+    }
 
-      // Reset if new day
-      if (credits && credits.last_reset_date !== today) {
-        used = 0;
-        promptsUsed = 0;
-        await supabase
-          .from("user_credits")
-          .update({ daily_generations_used: 0, daily_prompts_used: 0, last_reset_date: today })
-          .eq("user_id", user.id);
-      }
+    // Sync total if plan changed
+    if (credits.monthly_credits_total !== totalCredits) {
+      const diff = totalCredits - credits.monthly_credits_total;
+      const newRemaining = Math.max(0, credits.monthly_credits_remaining + diff);
+      await supabase
+        .from("user_credits")
+        .update({
+          monthly_credits_total: totalCredits,
+          monthly_credits_remaining: newRemaining,
+        })
+        .eq("user_id", user.id);
+      credits.monthly_credits_remaining = newRemaining;
+      credits.monthly_credits_total = totalCredits;
+    }
 
-      if (isPromptMode) {
-        // Check prompt daily limit
-        const promptLimit = limits.promptDaily;
-        if (promptLimit !== Infinity && promptsUsed + 1 > promptLimit) {
-          return new Response(
-            JSON.stringify({ allowed: false, reason: "daily_limit", plan, used: promptsUsed, limit: promptLimit }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+    const isPromptMode = generationType === "prompt";
+    const creditCost = isPromptMode ? PROMPT_COST : (CREDIT_COSTS[model] || 0.25);
+    const count = imageCount || 1;
+    const totalCost = creditCost * count;
 
-        return new Response(
-          JSON.stringify({
-            allowed: true,
-            plan,
-            used: promptsUsed,
-            limit: promptLimit === Infinity ? "unlimited" : promptLimit,
-            remaining: promptLimit === Infinity ? "unlimited" : promptLimit - promptsUsed,
-            watermarkRemoved: credits?.watermark_removed || false,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
+    if (action === "check") {
       // Check model access
-      if (model && !limits.models.includes(model)) {
+      if (!isPromptMode && model && !allowedModels.includes(model)) {
         return new Response(
           JSON.stringify({ allowed: false, reason: "model_restricted", plan }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -130,18 +147,24 @@ serve(async (req) => {
       }
 
       // Check batch size
-      if (imageCount && imageCount > limits.maxBatch) {
+      if (!isPromptMode && imageCount && imageCount > maxBatch) {
         return new Response(
-          JSON.stringify({ allowed: false, reason: "batch_restricted", plan, maxBatch: limits.maxBatch }),
+          JSON.stringify({ allowed: false, reason: "batch_restricted", plan, maxBatch }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check daily limit
-      const requestCount = imageCount || 1;
-      if (limits.daily !== Infinity && used + requestCount > limits.daily) {
+      // Check credit balance
+      if (credits.monthly_credits_remaining < totalCost) {
         return new Response(
-          JSON.stringify({ allowed: false, reason: "daily_limit", plan, used, limit: limits.daily }),
+          JSON.stringify({
+            allowed: false,
+            reason: "credit_limit",
+            plan,
+            creditsRemaining: credits.monthly_credits_remaining,
+            creditsTotal: credits.monthly_credits_total,
+            costRequired: totalCost,
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -150,58 +173,30 @@ serve(async (req) => {
         JSON.stringify({
           allowed: true,
           plan,
-          used,
-          limit: limits.daily === Infinity ? "unlimited" : limits.daily,
-          remaining: limits.daily === Infinity ? "unlimited" : limits.daily - used,
-          watermarkRemoved: credits?.watermark_removed || false,
+          creditsRemaining: credits.monthly_credits_remaining,
+          creditsTotal: credits.monthly_credits_total,
+          creditCost,
+          totalCost,
+          watermarkRemoved: credits.watermark_removed || false,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (action === "decrement") {
-      const count = imageCount || 1;
-      const today = new Date().toISOString().split("T")[0];
-
-      // Get current credits
-      const { data: credits } = await supabase
-        .from("user_credits")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      let currentUsed = credits?.daily_generations_used || 0;
-      let currentPromptsUsed = credits?.daily_prompts_used || 0;
-      if (credits && credits.last_reset_date !== today) {
-        currentUsed = 0;
-        currentPromptsUsed = 0;
-      }
-
-      if (isPromptMode) {
-        await supabase
-          .from("user_credits")
-          .update({
-            daily_prompts_used: currentPromptsUsed + count,
-            last_reset_date: today,
-          })
-          .eq("user_id", user.id);
-
-        return new Response(
-          JSON.stringify({ success: true, used: currentPromptsUsed + count }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
+      const newRemaining = Math.max(0, credits.monthly_credits_remaining - totalCost);
       await supabase
         .from("user_credits")
-        .update({
-          daily_generations_used: currentUsed + count,
-          last_reset_date: today,
-        })
+        .update({ monthly_credits_remaining: newRemaining })
         .eq("user_id", user.id);
 
       return new Response(
-        JSON.stringify({ success: true, used: currentUsed + count }),
+        JSON.stringify({
+          success: true,
+          creditsRemaining: newRemaining,
+          creditsTotal: credits.monthly_credits_total,
+          deducted: totalCost,
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

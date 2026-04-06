@@ -49,13 +49,13 @@ const Index = () => {
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
+  const [upgradeReason, setUpgradeReason] = useState<"credit_limit" | "model_restricted" | "batch_restricted">("credit_limit");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null); // pricing checkout state
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
-  const [promptCredits, setPromptCredits] = useState<{ used: number; limit: number | "unlimited" } | null>(null);
+  const [monthlyCredits, setMonthlyCredits] = useState<{ remaining: number; total: number } | null>(null);
 
   // Track auth state for UI gating
   useEffect(() => {
@@ -64,20 +64,20 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch prompt credits when logged in
-  const fetchPromptCredits = useCallback(async () => {
-    if (!session) { setPromptCredits(null); return; }
+  // Fetch monthly credits when logged in
+  const fetchCredits = useCallback(async () => {
+    if (!session) { setMonthlyCredits(null); return; }
     try {
       const { data, error } = await supabase.functions.invoke("check-credits", {
-        body: { action: "check", generationType: "prompt", imageCount: 1 },
+        body: { action: "check", model, imageCount: 1, generationType: mode },
       });
       if (!error && data) {
-        setPromptCredits({ used: data.used, limit: data.limit });
+        setMonthlyCredits({ remaining: data.creditsRemaining, total: data.creditsTotal });
       }
     } catch { /* ignore */ }
-  }, [session]);
+  }, [session, model, mode]);
 
-  useEffect(() => { fetchPromptCredits(); }, [fetchPromptCredits]);
+  useEffect(() => { fetchCredits(); }, [fetchCredits]);
 
   // Real-time public stats
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
@@ -219,7 +219,7 @@ const Index = () => {
           } else if (creditData?.reason === "batch_restricted") {
             setUpgradeReason("batch_restricted");
           } else {
-            setUpgradeReason("daily_limit");
+            setUpgradeReason("credit_limit");
           }
           setUpgradeOpen(true);
           return;
@@ -627,9 +627,7 @@ const Index = () => {
           return;
         }
         if (!creditData?.allowed) {
-          if (creditData?.reason === "daily_limit") {
-            setUpgradeReason("daily_limit");
-          }
+          setUpgradeReason(creditData?.reason === "model_restricted" ? "model_restricted" : "credit_limit");
           setUpgradeOpen(true);
           return;
         }
@@ -658,7 +656,7 @@ const Index = () => {
             body: { action: "decrement", generationType: "prompt", imageCount: 1 },
           }).then(({ error }) => {
             if (error) console.error("Failed to decrement credits:", error);
-            fetchPromptCredits();
+            fetchCredits();
           });
         }
       } else {
@@ -1088,13 +1086,11 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="prompt" className="space-y-4">
-                {session && promptCredits && (
+                {session && monthlyCredits && (
                   <div className="flex items-center justify-between rounded-md bg-surface-high px-3 py-2">
-                    <span className="text-xs text-muted-foreground">Prompt analyses today</span>
+                    <span className="text-xs text-muted-foreground">Monthly credits</span>
                     <span className="text-xs font-semibold text-foreground">
-                      {promptCredits.limit === "unlimited"
-                        ? `${promptCredits.used} used · Unlimited`
-                        : `${promptCredits.used} / ${promptCredits.limit} used`}
+                      {monthlyCredits.remaining} / {monthlyCredits.total} remaining
                     </span>
                   </div>
                 )}

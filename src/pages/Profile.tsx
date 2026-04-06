@@ -10,12 +10,6 @@ import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
 import type { User } from "@supabase/supabase-js";
 
-const PLAN_LIMITS: Record<string, { daily: number; promptDaily: number }> = {
-  free: { daily: 3, promptDaily: 5 },
-  pro: { daily: 20, promptDaily: 20 },
-  premium: { daily: 999, promptDaily: 999 },
-};
-
 const PLAN_PRICES: Record<string, string> = {
   free: "Free",
   pro: "$9.99/mo",
@@ -28,6 +22,13 @@ const PLAN_ICONS: Record<string, React.ReactNode> = {
   premium: <Crown className="h-5 w-5" />,
 };
 
+const CREDIT_COSTS = [
+  { model: "Nano Banana", cost: 0.25 },
+  { model: "Nano Banana 2", cost: 0.50 },
+  { model: "Nano Banana Pro", cost: 0.75 },
+  { model: "Image Prompt", cost: 0.25 },
+];
+
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -35,8 +36,8 @@ const Profile = () => {
   const [currentPlan, setCurrentPlan] = useState("free");
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [watermarkRemoved, setWatermarkRemoved] = useState(false);
-  const [generationsUsed, setGenerationsUsed] = useState(0);
-  const [promptsUsed, setPromptsUsed] = useState(0);
+  const [creditsRemaining, setCreditsRemaining] = useState(0);
+  const [creditsTotal, setCreditsTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -54,18 +55,19 @@ const Profile = () => {
   const loadData = async (userId: string) => {
     setLoading(true);
     try {
-      // Fetch profile, credits, and subscription in parallel
       const [profileRes, creditsRes, subRes] = await Promise.all([
         supabase.from("profiles").select("display_name, avatar_url").eq("user_id", userId).single(),
-        supabase.from("user_credits").select("daily_generations_used, daily_prompts_used, watermark_removed").eq("user_id", userId).single(),
+        supabase.functions.invoke("check-credits", {
+          body: { action: "check", model: "google/gemini-2.5-flash-image-preview", imageCount: 1, generationType: "generate" },
+        }),
         supabase.functions.invoke("check-subscription"),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (creditsRes.data) {
-        setGenerationsUsed(creditsRes.data.daily_generations_used);
-        setPromptsUsed(creditsRes.data.daily_prompts_used);
-        setWatermarkRemoved(creditsRes.data.watermark_removed);
+        setCreditsRemaining(creditsRes.data.creditsRemaining ?? 0);
+        setCreditsTotal(creditsRes.data.creditsTotal ?? 0);
+        setWatermarkRemoved(creditsRes.data.watermarkRemoved || false);
       }
       if (subRes.data) {
         setCurrentPlan(subRes.data.plan || "free");
@@ -121,9 +123,7 @@ const Profile = () => {
     );
   }
 
-  const limits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.free;
-  const genPercent = Math.min((generationsUsed / limits.daily) * 100, 100);
-  const promptPercent = Math.min((promptsUsed / limits.promptDaily) * 100, 100);
+  const creditPercent = creditsTotal > 0 ? Math.min((creditsRemaining / creditsTotal) * 100, 100) : 0;
 
   const initials = (profile?.display_name || user?.email || "U")
     .split(" ")
@@ -136,7 +136,6 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <SEO title="My Account — Cinely.AI" description="Manage your account, view usage, and subscription." />
 
-      {/* Header */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2">
@@ -219,25 +218,29 @@ const Profile = () => {
 
         {/* Usage Card */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">Today's Usage</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">Monthly Credits</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-foreground">Generations</span>
+                <span className="text-foreground">Credits Remaining</span>
                 <span className="text-muted-foreground">
-                  {generationsUsed} / {limits.daily === 999 ? "∞" : limits.daily}
+                  {creditsRemaining} / {creditsTotal}
                 </span>
               </div>
-              <Progress value={limits.daily === 999 ? 0 : genPercent} className="h-2" />
+              <Progress value={creditPercent} className="h-2" />
             </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-foreground">Prompts</span>
-                <span className="text-muted-foreground">
-                  {promptsUsed} / {limits.promptDaily === 999 ? "∞" : limits.promptDaily}
-                </span>
+
+            {/* Credit cost breakdown */}
+            <div className="border-t border-border pt-3">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Credit costs per image</p>
+              <div className="grid grid-cols-2 gap-1">
+                {CREDIT_COSTS.map((item) => (
+                  <div key={item.model} className="flex justify-between text-xs text-muted-foreground">
+                    <span>{item.model}</span>
+                    <span className="font-medium text-foreground">{item.cost} cr</span>
+                  </div>
+                ))}
               </div>
-              <Progress value={limits.promptDaily === 999 ? 0 : promptPercent} className="h-2" />
             </div>
           </div>
         </div>

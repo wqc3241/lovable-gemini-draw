@@ -13,13 +13,13 @@ import { Zap } from "lucide-react";
 interface UpgradeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reason: "daily_limit" | "model_restricted" | "batch_restricted";
+  reason: "credit_limit" | "model_restricted" | "batch_restricted";
 }
 
 const messages = {
-  daily_limit: {
-    title: "Daily Limit Reached",
-    description: "You've used all your free daily generations. Upgrade to Pro for 20 generations/day or Premium for unlimited.",
+  credit_limit: {
+    title: "Credits Exhausted",
+    description: "You've used all your monthly credits. Upgrade to Pro for 150 credits/month or Premium for 500 credits/month.",
   },
   model_restricted: {
     title: "Model Not Available",
