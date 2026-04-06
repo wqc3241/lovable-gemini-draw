@@ -17,6 +17,10 @@ import {
   ChevronRight,
   FileText,
   Copy,
+  Zap,
+  Crown,
+  Check,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1183,6 +1187,83 @@ const Index = () => {
             </div>
           </Card>
         </div>
+
+        {/* Pricing Section */}
+        <section className="mt-20 max-w-5xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold font-display mb-3">Choose Your Plan</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">Start free and upgrade as your creative needs grow.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Free", key: "free", price: "$0", period: "forever", icon: Sparkles,
+                description: "Get started with AI image generation",
+                features: ["3 generations per day", "Nano Banana model only", "Up to 5 images per batch", "Watermarked images", "7-day history"],
+                limitations: ["No Pro or Nano Banana 2 models", "No priority queue"],
+                popular: false, accent: false,
+              },
+              {
+                name: "Pro", key: "pro", price: "$9.99", period: "/month", icon: Zap,
+                description: "For creators who need more power",
+                features: ["20 generations per day", "All 3 AI models", "Up to 9 images per batch", "Watermarked images", "14-day history"],
+                limitations: [],
+                popular: true, accent: true,
+              },
+              {
+                name: "Premium", key: "premium", price: "$24.99", period: "/month", icon: Crown,
+                description: "Unlimited creativity, zero limits",
+                features: ["Unlimited generations", "All 3 AI models", "Up to 9 images per batch", "Watermarked images", "Unlimited history", "Priority queue"],
+                limitations: [],
+                popular: false, accent: false,
+              },
+            ].map((plan) => {
+              const Icon = plan.icon;
+              return (
+                <Card
+                  key={plan.key}
+                  className={`relative p-6 flex flex-col border ${
+                    plan.accent ? "border-primary shadow-lg shadow-primary/10" : "border-border"
+                  }`}
+                >
+                  {plan.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className={`h-5 w-5 ${plan.accent ? "text-primary" : "text-muted-foreground"}`} />
+                    <h3 className="text-lg font-bold">{plan.name}</h3>
+                  </div>
+                  <div className="mb-1">
+                    <span className="text-3xl font-extrabold">{plan.price}</span>
+                    <span className="text-sm text-muted-foreground ml-1">{plan.period}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                  <ul className="space-y-2 mb-4 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm">
+                        <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                    {plan.limitations.map((l) => (
+                      <li key={l} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <X className="h-4 w-4 mt-0.5 shrink-0" />
+                        <span>{l}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/pricing">
+                    <Button className="w-full" variant={plan.accent ? "default" : "outline"}>
+                      {plan.key === "free" ? "Get Started" : `Upgrade to ${plan.name}`}
+                    </Button>
+                  </Link>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Info Footer */}
         <footer className="mt-16 pt-12 pb-8">
