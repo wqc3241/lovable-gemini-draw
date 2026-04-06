@@ -1,0 +1,1 @@
+ALTER TABLE public.user_credits ADD COLUMN daily_prompts_used integer NOT NULL DEFAULT 0;

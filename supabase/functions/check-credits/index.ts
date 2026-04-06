@@ -6,14 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLAN_LIMITS: Record<string, { daily: number; models: string[]; maxBatch: number }> = {
+const PLAN_LIMITS: Record<string, { daily: number; promptDaily: number; models: string[]; maxBatch: number }> = {
   free: {
     daily: 3,
+    promptDaily: 5,
     models: ["google/gemini-2.5-flash-image-preview"],
     maxBatch: 5,
   },
   pro: {
     daily: 20,
+    promptDaily: 20,
     models: [
       "google/gemini-2.5-flash-image-preview",
       "google/gemini-3.1-flash-image-preview",
@@ -23,6 +25,7 @@ const PLAN_LIMITS: Record<string, { daily: number; models: string[]; maxBatch: n
   },
   premium: {
     daily: Infinity,
+    promptDaily: Infinity,
     models: [
       "google/gemini-2.5-flash-image-preview",
       "google/gemini-3.1-flash-image-preview",
@@ -60,7 +63,8 @@ serve(async (req) => {
       );
     }
 
-    const { action, model, imageCount } = await req.json();
+    const { action, model, imageCount, generationType } = await req.json();
+    const isPromptMode = generationType === "prompt";
 
     // Get subscription
     const { data: subscription } = await supabase
@@ -82,14 +86,39 @@ serve(async (req) => {
 
       const today = new Date().toISOString().split("T")[0];
       let used = credits?.daily_generations_used || 0;
+      let promptsUsed = credits?.daily_prompts_used || 0;
 
       // Reset if new day
       if (credits && credits.last_reset_date !== today) {
         used = 0;
+        promptsUsed = 0;
         await supabase
           .from("user_credits")
-          .update({ daily_generations_used: 0, last_reset_date: today })
+          .update({ daily_generations_used: 0, daily_prompts_used: 0, last_reset_date: today })
           .eq("user_id", user.id);
+      }
+
+      if (isPromptMode) {
+        // Check prompt daily limit
+        const promptLimit = limits.promptDaily;
+        if (promptLimit !== Infinity && promptsUsed + 1 > promptLimit) {
+          return new Response(
+            JSON.stringify({ allowed: false, reason: "daily_limit", plan, used: promptsUsed, limit: promptLimit }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            allowed: true,
+            plan,
+            used: promptsUsed,
+            limit: promptLimit === Infinity ? "unlimited" : promptLimit,
+            remaining: promptLimit === Infinity ? "unlimited" : promptLimit - promptsUsed,
+            watermarkRemoved: credits?.watermark_removed || false,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       // Check model access
@@ -142,8 +171,25 @@ serve(async (req) => {
         .single();
 
       let currentUsed = credits?.daily_generations_used || 0;
+      let currentPromptsUsed = credits?.daily_prompts_used || 0;
       if (credits && credits.last_reset_date !== today) {
         currentUsed = 0;
+        currentPromptsUsed = 0;
+      }
+
+      if (isPromptMode) {
+        await supabase
+          .from("user_credits")
+          .update({
+            daily_prompts_used: currentPromptsUsed + count,
+            last_reset_date: today,
+          })
+          .eq("user_id", user.id);
+
+        return new Response(
+          JSON.stringify({ success: true, used: currentPromptsUsed + count }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       await supabase

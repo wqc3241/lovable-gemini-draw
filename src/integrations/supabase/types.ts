@@ -111,6 +111,7 @@ export type Database = {
         Row: {
           created_at: string
           daily_generations_used: number
+          daily_prompts_used: number
           id: string
           last_reset_date: string
           user_id: string
@@ -119,6 +120,7 @@ export type Database = {
         Insert: {
           created_at?: string
           daily_generations_used?: number
+          daily_prompts_used?: number
           id?: string
           last_reset_date?: string
           user_id: string
@@ -127,6 +129,7 @@ export type Database = {
         Update: {
           created_at?: string
           daily_generations_used?: number
+          daily_prompts_used?: number
           id?: string
           last_reset_date?: string
           user_id?: string
