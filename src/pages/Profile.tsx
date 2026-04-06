@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, History, CreditCard, LogOut, Crown, Sparkles, Shield } from "lucide-react";
 import { toast } from "sonner";
 import UserMenu from "@/components/UserMenu";
-import SEO from "@/components/SEO";
+import { SEO } from "@/components/SEO";
 import type { User } from "@supabase/supabase-js";
 
 const PLAN_LIMITS: Record<string, { daily: number; promptDaily: number }> = {
