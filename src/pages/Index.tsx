@@ -52,6 +52,7 @@ const Index = () => {
   const [upgradeReason, setUpgradeReason] = useState<"credit_limit" | "model_restricted" | "batch_restricted">("credit_limit");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null); // pricing checkout state
+  const [currentPlan, setCurrentPlan] = useState("free");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
