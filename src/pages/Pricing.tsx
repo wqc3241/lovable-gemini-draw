@@ -170,7 +170,7 @@ const Pricing = () => {
 
           {/* Watermark removal add-on */}
           <div className="mb-8 text-center">
-            <Card className="inline-flex items-center gap-3 px-6 py-3 border-0 bg-surface-high rounded-md">
+            <Card className="inline-flex items-center gap-3 px-6 py-3 border border-border bg-card rounded-md">
               <span className="text-sm font-medium">🎨 Remove watermarks on any plan</span>
               <Badge variant="secondary" className="font-bold">+$2/mo</Badge>
               {user && (
