@@ -293,8 +293,8 @@ const Pricing = () => {
             <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-1">When do my daily credits reset?</h3>
-                <p className="text-sm text-muted-foreground">Daily credits reset at midnight UTC every day.</p>
+                <h3 className="font-semibold mb-1">When do my credits reset?</h3>
+                <p className="text-sm text-muted-foreground">Credits reset every 30 days from when your account was created or plan was activated.</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-1">Can I switch plans anytime?</h3>
