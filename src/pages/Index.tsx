@@ -580,7 +580,7 @@ const Index = () => {
         keywords={['AI image generator', 'text to image', 'AI art', 'image editing', 'AI tools', 'batch image processing', 'prompt engineering', 'AI visual studio', 'cinematic AI images']}
         url="https://cinely.ai"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4 relative">
