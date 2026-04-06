@@ -39,7 +39,9 @@ serve(async (req) => {
     const priceId = PRICE_MAP[plan];
     if (!priceId) throw new Error("Invalid plan");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    console.log("[CREATE-CHECKOUT] Stripe key present:", !!stripeKey);
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
