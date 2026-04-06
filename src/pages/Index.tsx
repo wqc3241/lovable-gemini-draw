@@ -334,7 +334,7 @@ const Index = () => {
           if (session) {
             // Decrement credits
             supabase.functions.invoke("check-credits", {
-              body: { action: "decrement", model, imageCount: successCount },
+              body: { action: "decrement", model, imageCount: successCount, generationType: mode },
             }).then(({ error }) => {
               if (error) console.error("Failed to decrement credits:", error);
             });
