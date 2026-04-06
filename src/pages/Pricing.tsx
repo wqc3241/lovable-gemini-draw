@@ -296,8 +296,8 @@ const Pricing = () => {
             <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-1">When do my credits reset?</h3>
-                <p className="text-sm text-muted-foreground">Credits reset every 30 days from when your account was created or plan was activated.</p>
+                <h3 className="font-semibold mb-1">How do credits work?</h3>
+                <p className="text-sm text-muted-foreground">Each generation costs credits based on the model: Nano Banana (0.25 cr), Nano Banana 2 (0.5 cr), Nano Banana Pro (0.75 cr). Image-to-Prompt analysis costs 0.25 credits. Credits reset every 30 days from account creation or plan activation.</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-1">Can I switch plans anytime?</h3>
