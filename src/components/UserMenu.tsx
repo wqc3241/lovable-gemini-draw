@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,17 +13,23 @@ import {
 import { LogOut, History, User, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import AuthDialog from "@/components/AuthDialog";
 
 const UserMenu = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        setAuthOpen(false);
+      } else {
+        setProfile(null);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,10 +58,13 @@ const UserMenu = () => {
 
   if (!user) {
     return (
-      <Button variant="outline" size="sm" onClick={() => navigate("/auth")} className="gap-2">
-        <User className="h-4 w-4" />
-        Sign In
-      </Button>
+      <>
+        <Button variant="outline" size="sm" onClick={() => setAuthOpen(true)} className="gap-2">
+          <User className="h-4 w-4" />
+          Sign In
+        </Button>
+        <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      </>
     );
   }
 

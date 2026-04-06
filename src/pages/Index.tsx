@@ -30,6 +30,7 @@ import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
 import UserMenu from "@/components/UserMenu";
 import UpgradeDialog from "@/components/UpgradeDialog";
+import AuthDialog from "@/components/AuthDialog";
 import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -49,6 +50,7 @@ const Index = () => {
   const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
@@ -193,7 +195,7 @@ const Index = () => {
         toast.error("Create a free account to generate with custom prompts", {
           action: {
             label: "Sign Up",
-            onClick: () => window.location.href = "/auth",
+            onClick: () => setAuthDialogOpen(true),
           },
         });
         return;
@@ -879,7 +881,7 @@ const Index = () => {
 
                 {!session && !ALL_EXAMPLE_PROMPTS.some((ex) => ex.toLowerCase() === prompt.trim().toLowerCase()) && prompt.trim() && (
                   <p className="text-xs text-muted-foreground text-center">
-                    <Link to="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">Sign up</Link> to generate with custom prompts
+                    <button onClick={() => setAuthDialogOpen(true)} className="text-primary underline underline-offset-2 hover:opacity-80">Sign up</button> to generate with custom prompts
                   </p>
                 )}
 
@@ -1600,6 +1602,7 @@ const Index = () => {
       </Dialog>
     </div>
     <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} reason={upgradeReason} />
+    <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </>
   );
 };
