@@ -4,106 +4,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Cinely.AI Design System — "The Synthetic Auteur"
-   Dark cinematic palette. No hard borders. Glass & depth.
+/* Cinely.AI Design System — "The Pristine Curator"
+   Light editorial palette. No hard borders. Tonal layering & depth.
    All colors MUST be HSL. */
 
 @layer base {
   :root {
-    /* Surface hierarchy (obsidian tones) */
-    --background: 0 0% 7.5%;          /* #131313 — Level 0 Base */
-    --foreground: 0 0% 89%;           /* #E2E2E2 */
+    /* Surface hierarchy (pristine white tones) */
+    --background: 240 5% 97.5%;          /* #f9f9f9 — Base Layer */
+    --foreground: 180 7% 11%;            /* #1a1c1c — on_surface */
 
-    --card: 0 0% 10.5%;              /* #1B1B1B — Level 1 Inland */
-    --card-foreground: 0 0% 89%;
+    --card: 0 0% 100%;                   /* #ffffff — Lifted focus layer */
+    --card-foreground: 180 7% 11%;
 
-    --popover: 0 0% 16.5%;           /* #2A2A2A — Level 2 Raised */
-    --popover-foreground: 0 0% 89%;
+    --popover: 0 0% 100%;               /* #ffffff — Floating */
+    --popover-foreground: 180 7% 11%;
 
-    /* Primary — The "power source" lavender */
-    --primary: 263 100% 80%;          /* #d0bcff */
-    --primary-foreground: 263 30% 15%;
+    /* Primary — Deep Violet "digital ink" */
+    --primary: 263 70% 52%;              /* #6b38d4 */
+    --primary-foreground: 0 0% 100%;     /* #ffffff */
 
     /* Primary container for gradient end */
-    --primary-container: 263 100% 62%; /* #a078ff */
+    --primary-container: 263 82% 63%;    /* #8455ef */
 
-    /* Secondary — cinematic red accent */
-    --secondary: 355 100% 85%;        /* #FFB2B7 */
-    --secondary-foreground: 355 100% 35%;
-    --secondary-container: 355 100% 35%; /* #B50036 at 20% opacity via usage */
+    /* Secondary — Soft muted accent */
+    --secondary: 240 5% 93%;             /* #eeeeee — surface_container */
+    --secondary-foreground: 180 7% 11%;
+    --secondary-container: 240 5% 93%;
 
-    --muted: 0 0% 13%;               /* Level 1.5 */
-    --muted-foreground: 0 0% 55%;
+    --muted: 240 5% 95.5%;              /* #f3f3f4 — surface_container_low */
+    --muted-foreground: 263 10% 33%;     /* #494454 — on_surface_variant */
 
-    /* Accent — surface-container-high */
-    --accent: 0 0% 16.5%;            /* #2A2A2A */
-    --accent-foreground: 263 100% 80%;
+    /* Accent — surface_container_high */
+    --accent: 240 2% 91%;               /* #e8e8e8 */
+    --accent-foreground: 263 70% 52%;    /* primary */
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
 
     /* Ghost borders & inputs */
-    --border: 263 12% 30%;            /* outline-variant #494454 at ~15% effective */
-    --input: 0 0% 5.5%;              /* surface-container-lowest #0E0E0E */
-    --ring: 263 100% 80%;
+    --border: 263 20% 83%;              /* #cbc3d7 — outline_variant */
+    --input: 240 5% 95.5%;             /* #f3f3f4 — surface_container_low */
+    --ring: 263 70% 52%;
 
     --radius: 0.75rem;
 
     /* Signature textures */
-    --gradient-primary: linear-gradient(135deg, hsl(263 100% 80%) 0%, hsl(263 100% 62%) 100%);
-    --shadow-ambient: 0 8px 32px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 24px hsl(263 100% 80% / 0.15);
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 52%) 0%, hsl(263 82% 63%) 100%);
+    --shadow-ambient: 0 12px 32px hsl(263 70% 52% / 0.06);
+    --shadow-glow: 0 0 24px hsl(263 70% 52% / 0.10);
 
     /* Surface tiers for manual use */
-    --surface-lowest: 0 0% 5.5%;     /* #0E0E0E */
-    --surface-low: 0 0% 10.5%;       /* #1B1B1B */
-    --surface-high: 0 0% 16.5%;      /* #2A2A2A */
-    --surface-highest: 0 0% 21%;     /* #353535 */
+    --surface-lowest: 0 0% 100%;        /* #ffffff */
+    --surface-low: 240 5% 95.5%;        /* #f3f3f4 */
+    --surface-high: 240 2% 91%;         /* #e8e8e8 */
+    --surface-highest: 240 3% 87%;      /* #dcdcdc */
 
     /* Inverse for tooltips */
-    --inverse-surface: 0 0% 89%;     /* #E2E2E2 */
-    --inverse-on-surface: 0 0% 19%;  /* #303030 */
+    --inverse-surface: 180 7% 11%;      /* #1a1c1c */
+    --inverse-on-surface: 0 0% 95%;     /* #f0f0f0 */
 
-    --sidebar-background: 0 0% 10.5%;
-    --sidebar-foreground: 0 0% 89%;
-    --sidebar-primary: 263 100% 80%;
-    --sidebar-primary-foreground: 263 30% 15%;
-    --sidebar-accent: 0 0% 16.5%;
-    --sidebar-accent-foreground: 0 0% 89%;
-    --sidebar-border: 263 12% 30%;
-    --sidebar-ring: 263 100% 80%;
-  }
-
-  /* Override dark class to same values (always dark) */
-  .dark {
-    --background: 0 0% 7.5%;
-    --foreground: 0 0% 89%;
-    --card: 0 0% 10.5%;
-    --card-foreground: 0 0% 89%;
-    --popover: 0 0% 16.5%;
-    --popover-foreground: 0 0% 89%;
-    --primary: 263 100% 80%;
-    --primary-foreground: 263 30% 15%;
-    --primary-container: 263 100% 62%;
-    --secondary: 355 100% 85%;
-    --secondary-foreground: 355 100% 35%;
-    --muted: 0 0% 13%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 0 0% 16.5%;
-    --accent-foreground: 263 100% 80%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 263 12% 30%;
-    --input: 0 0% 5.5%;
-    --ring: 263 100% 80%;
-    --sidebar-background: 0 0% 10.5%;
-    --sidebar-foreground: 0 0% 89%;
-    --sidebar-primary: 263 100% 80%;
-    --sidebar-primary-foreground: 263 30% 15%;
-    --sidebar-accent: 0 0% 16.5%;
-    --sidebar-accent-foreground: 0 0% 89%;
-    --sidebar-border: 263 12% 30%;
-    --sidebar-ring: 263 100% 80%;
+    --sidebar-background: 240 5% 95.5%;
+    --sidebar-foreground: 180 7% 11%;
+    --sidebar-primary: 263 70% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 2% 91%;
+    --sidebar-accent-foreground: 180 7% 11%;
+    --sidebar-border: 263 20% 83%;
+    --sidebar-ring: 263 70% 52%;
   }
 }
 
@@ -131,7 +99,7 @@
 
 /* Utility: glass effect for floating panels */
 .glass {
-  background: hsl(var(--card) / 0.6);
+  background: hsl(var(--card) / 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }

@@ -9,21 +9,21 @@ export function TipCallout({ children, variant = "tip" }: TipCalloutProps) {
   const variants = {
     tip: {
       icon: Lightbulb,
-      bg: "bg-blue-500/10",
-      border: "border-blue-500/30",
-      text: "text-blue-600 dark:text-blue-400",
+      bg: "bg-primary/5",
+      border: "border-primary/15",
+      text: "text-primary",
     },
     warning: {
       icon: AlertCircle,
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/30",
-      text: "text-orange-600 dark:text-orange-400",
+      bg: "bg-destructive/5",
+      border: "border-destructive/15",
+      text: "text-destructive",
     },
     info: {
       icon: Info,
-      bg: "bg-purple-500/10",
-      border: "border-purple-500/30",
-      text: "text-purple-600 dark:text-purple-400",
+      bg: "bg-primary/5",
+      border: "border-primary/15",
+      text: "text-primary",
     },
   };
 
