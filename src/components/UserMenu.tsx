@@ -91,6 +91,10 @@ const UserMenu = () => {
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+          <User className="mr-2 h-4 w-4" />
+          My Account
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate("/history")} className="cursor-pointer">
           <History className="mr-2 h-4 w-4" />
           Generation History
