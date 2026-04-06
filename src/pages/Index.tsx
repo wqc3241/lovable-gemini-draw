@@ -52,7 +52,24 @@ const Index = () => {
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
-  const scrollToResults = () => {
+  // Real-time public stats
+  const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
+
+  const fetchStats = useCallback(async () => {
+    const { data } = await supabase.rpc("get_public_stats");
+    if (data) setStats(data as { total_users: number; total_images: number });
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    const channel = supabase
+      .channel("public-stats")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "generation_history" }, fetchStats)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchStats]);
+
     if (isMobile && resultSectionRef.current) {
       setTimeout(() => {
         resultSectionRef.current?.scrollIntoView({
