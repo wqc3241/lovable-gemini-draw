@@ -51,6 +51,14 @@ const Index = () => {
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
+  const [session, setSessionState] = useState<any>(null);
+
+  // Track auth state for UI gating
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => setSessionState(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => setSessionState(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Real-time public stats
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
