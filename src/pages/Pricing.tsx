@@ -193,23 +193,23 @@ const Pricing = () => {
               return (
                 <Card
                   key={plan.name}
-                  className={`relative p-6 flex flex-col border-0 rounded-lg ${
+                  className={`relative p-6 flex flex-col border rounded-lg ${
                     plan.accent
-                      ? "bg-surface-high shadow-glow ring-1 ring-primary/30"
+                      ? "border-primary shadow-lg shadow-primary/10 bg-card"
                       : isCurrent
-                      ? "bg-surface-high ring-1 ring-primary/15"
-                      : "bg-card"
+                      ? "border-primary/30 bg-card"
+                      : "border-border bg-card"
                   }`}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       Most Popular
-                    </Badge>
+                    </span>
                   )}
                   {isCurrent && (
-                    <Badge variant="outline" className="absolute -top-3 right-4 border-primary text-primary px-3">
+                    <span className="absolute -top-3 right-4 border border-primary text-primary text-xs font-semibold px-3 py-1 rounded-full bg-card">
                       Your Plan
-                    </Badge>
+                    </span>
                   )}
 
                   <div className="mb-4">
