@@ -1078,7 +1078,7 @@ const Index = () => {
             </div>
 
             <div
-              className="relative w-full max-w-full overflow-hidden rounded-lg bg-muted/30 border border-border"
+              className="relative w-full max-w-full overflow-hidden rounded-lg bg-surface-lowest border-0"
               style={
                 generatedImages[currentImageIndex] && aspectRatio !== "auto"
                   ? {
