@@ -1207,6 +1207,22 @@ const Index = () => {
           </Card>
         </div>
 
+        {/* Real-time Stats */}
+        <section className="mt-16 max-w-3xl mx-auto px-4">
+          <div className="grid grid-cols-2 gap-6">
+            <Card className="p-6 text-center border-border bg-card/50 backdrop-blur-sm">
+              <Users className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="text-4xl font-extrabold font-display tabular-nums">{stats.total_users.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Users Creating</p>
+            </Card>
+            <Card className="p-6 text-center border-border bg-card/50 backdrop-blur-sm">
+              <ImageIcon className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="text-4xl font-extrabold font-display tabular-nums">{stats.total_images.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Images Generated</p>
+            </Card>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section className="mt-20 max-w-5xl mx-auto px-4">
           <div className="text-center mb-10">
