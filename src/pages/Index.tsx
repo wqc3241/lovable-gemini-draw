@@ -1332,7 +1332,7 @@ const Index = () => {
                     >
                       <ChevronRight className="h-6 w-6" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/70 px-4 py-2 rounded-full">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-foreground text-sm bg-surface-highest/80 px-4 py-2 rounded-full">
                       {currentImageIndex + 1} / {generatedImages.length}
                     </div>
                   </>
