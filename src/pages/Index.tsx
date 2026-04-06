@@ -1150,7 +1150,7 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
               {/* Brand Column */}
               <div className="sm:col-span-2 lg:col-span-1">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent mb-3">
+                <h3 className="text-2xl font-bold text-primary font-display mb-3">
                   Cinely.AI
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
