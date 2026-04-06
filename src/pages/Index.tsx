@@ -627,9 +627,7 @@ const Index = () => {
           return;
         }
         if (!creditData?.allowed) {
-          if (creditData?.reason === "daily_limit") {
-            setUpgradeReason("daily_limit");
-          }
+          setUpgradeReason(creditData?.reason === "model_restricted" ? "model_restricted" : "credit_limit");
           setUpgradeOpen(true);
           return;
         }
