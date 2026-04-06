@@ -1300,7 +1300,7 @@ const Index = () => {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-background/90 backdrop-blur-xl">
           <div className="relative w-full h-full flex items-center justify-center">
             {generatedImages[currentImageIndex] && (
               <>
