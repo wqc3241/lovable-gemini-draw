@@ -51,6 +51,7 @@ const Index = () => {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
@@ -1385,11 +1386,36 @@ const Index = () => {
                       Remove watermark for <span className="font-semibold text-foreground">$2/mo</span> as add-on
                     </p>
                   )}
-                  <Link to="/pricing">
-                    <Button className="w-full" variant={plan.accent ? "default" : "outline"}>
-                      {plan.key === "free" ? "Get Started" : `Upgrade to ${plan.name}`}
-                    </Button>
-                  </Link>
+                  <Button
+                    className="w-full"
+                    variant={plan.accent ? "default" : "outline"}
+                    disabled={checkoutLoading === plan.key}
+                    onClick={async () => {
+                      if (plan.key === "free") {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                        return;
+                      }
+                      if (!session) {
+                        setAuthDialogOpen(true);
+                        return;
+                      }
+                      setCheckoutLoading(plan.key);
+                      try {
+                        const { data, error } = await supabase.functions.invoke("create-checkout", {
+                          body: { plan: plan.key },
+                        });
+                        if (error) throw error;
+                        if (data?.url) window.open(data.url, "_blank");
+                      } catch (e: any) {
+                        toast.error(e.message || "Failed to start checkout");
+                      } finally {
+                        setCheckoutLoading(null);
+                      }
+                    }}
+                  >
+                    {checkoutLoading === plan.key && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                    {plan.key === "free" ? "Get Started" : !session ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
+                  </Button>
                 </Card>
               );
             })}
