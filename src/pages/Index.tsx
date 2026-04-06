@@ -1085,6 +1085,16 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="prompt" className="space-y-4">
+                {session && promptCredits && (
+                  <div className="flex items-center justify-between rounded-md bg-surface-high px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Prompt analyses today</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {promptCredits.limit === "unlimited"
+                        ? `${promptCredits.used} used · Unlimited`
+                        : `${promptCredits.used} / ${promptCredits.limit} used`}
+                    </span>
+                  </div>
+                )}
                 <div>
                   <Label className="mb-2 block text-sm font-medium">Upload Image to Analyze</Label>
                   <div className="relative">
