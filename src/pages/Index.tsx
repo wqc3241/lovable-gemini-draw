@@ -1019,7 +1019,7 @@ const Index = () => {
                       </Button>
                       <Button
                         onClick={handleUsePromptInGenerate}
-                        className="flex-1 bg-gradient-to-r from-primary to-accent-foreground"
+                        className="flex-1 ai-pulse border-0"
                       >
                         <Sparkles className="mr-2 h-4 w-4" />
                         Use in Generate
