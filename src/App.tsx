@@ -42,6 +42,7 @@ const App = () => {
             <Route path="/guide/batch-processing" element={<BatchProcessingGuide />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/history" element={<History />} />
+            <Route path="/pricing" element={<Pricing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
