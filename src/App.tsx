@@ -13,6 +13,9 @@ import GenerateImagesGuide from "./pages/GenerateImagesGuide";
 import EditImagesGuide from "./pages/EditImagesGuide";
 import ImageToPromptGuide from "./pages/ImageToPromptGuide";
 import BatchProcessingGuide from "./pages/BatchProcessingGuide";
+import Auth from "./pages/Auth";
+import History from "./pages/History";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +40,9 @@ const App = () => {
             <Route path="/guide/edit-images" element={<EditImagesGuide />} />
             <Route path="/guide/image-to-prompt" element={<ImageToPromptGuide />} />
             <Route path="/guide/batch-processing" element={<BatchProcessingGuide />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/pricing" element={<Pricing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

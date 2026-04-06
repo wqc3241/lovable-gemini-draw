@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-image]
 verify_jwt = false
+
+[functions.check-credits]
+verify_jwt = false

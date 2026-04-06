@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
+import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -39,6 +40,7 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [promptImage, setPromptImage] = useState<string | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
+  const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
@@ -149,6 +151,7 @@ const Index = () => {
                 imageData: mode === "edit" ? uploadedImage : null,
                 aspectRatio,
                 pastedImages: pastedImages.length > 0 ? pastedImages : null,
+                model,
               },
             });
             return {
@@ -247,6 +250,24 @@ const Index = () => {
         );
         setPastedImages([]); // Clear pasted images after successful generation
         scrollToResults(); // Auto-scroll to results on mobile
+
+        // Save to history if logged in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            newImages.forEach((imageUrl) => {
+              supabase.from("generation_history").insert({
+                user_id: session.user.id,
+                prompt,
+                model,
+                aspect_ratio: aspectRatio,
+                image_url: imageUrl,
+                mode,
+              }).then(({ error }) => {
+                if (error) console.error("Failed to save history:", error);
+              });
+            });
+          }
+        });
       }
       if (failCount > 0 && imageCount > 1) {
         toast.error(`${failCount} image(s) failed to generate`);
@@ -562,7 +583,10 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <header className="mb-8 md:mb-12 text-center px-4">
+        <header className="mb-8 md:mb-12 text-center px-4 relative">
+          <div className="absolute right-0 top-0">
+            <UserMenu />
+          </div>
           {/* Logo/Brand Name */}
           <div className="mb-4">
             <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
@@ -606,7 +630,23 @@ const Index = () => {
               </TabsList>
 
               <TabsContent value="generate" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="model-select" className="mb-2 block text-sm font-medium">
+                      Model
+                    </Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger id="model-select" className="bg-background">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="google/gemini-2.5-flash-image-preview">Nano Banana (Fast)</SelectItem>
+                        <SelectItem value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (Balanced)</SelectItem>
+                        <SelectItem value="google/gemini-3-pro-image-preview">Pro (Best Quality)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div>
                     <Label htmlFor="aspect-ratio" className="mb-2 block text-sm font-medium">
                       Aspect Ratio
@@ -767,7 +807,23 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="model-select-edit" className="mb-2 block text-sm font-medium">
+                      Model
+                    </Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger id="model-select-edit" className="bg-background">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="google/gemini-2.5-flash-image-preview">Nano Banana (Fast)</SelectItem>
+                        <SelectItem value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (Balanced)</SelectItem>
+                        <SelectItem value="google/gemini-3-pro-image-preview">Pro (Best Quality)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div>
                     <Label htmlFor="aspect-ratio-edit" className="mb-2 block text-sm font-medium">
                       Aspect Ratio
