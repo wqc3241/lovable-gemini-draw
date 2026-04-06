@@ -65,6 +65,20 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Fetch current plan from subscriptions table
+  useEffect(() => {
+    const fetchPlan = async () => {
+      if (!session?.user?.id) { setCurrentPlan("free"); return; }
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", session.user.id)
+        .single();
+      if (data?.plan) setCurrentPlan(data.plan);
+    };
+    fetchPlan();
+  }, [session]);
+
   // Fetch monthly credits when logged in
   const fetchCredits = useCallback(async () => {
     if (!session) { setMonthlyCredits(null); return; }
