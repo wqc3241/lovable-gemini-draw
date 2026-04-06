@@ -250,6 +250,24 @@ const Index = () => {
         );
         setPastedImages([]); // Clear pasted images after successful generation
         scrollToResults(); // Auto-scroll to results on mobile
+
+        // Save to history if logged in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            newImages.forEach((imageUrl) => {
+              supabase.from("generation_history").insert({
+                user_id: session.user.id,
+                prompt,
+                model,
+                aspect_ratio: aspectRatio,
+                image_url: imageUrl,
+                mode,
+              }).then(({ error }) => {
+                if (error) console.error("Failed to save history:", error);
+              });
+            });
+          }
+        });
       }
       if (failCount > 0 && imageCount > 1) {
         toast.error(`${failCount} image(s) failed to generate`);
