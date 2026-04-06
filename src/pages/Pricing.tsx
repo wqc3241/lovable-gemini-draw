@@ -149,7 +149,7 @@ const Pricing = () => {
         description="Choose the perfect plan for your AI image generation needs."
         url="https://cinely.ai/pricing"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
