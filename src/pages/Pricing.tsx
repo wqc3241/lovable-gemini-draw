@@ -240,6 +240,12 @@ const Pricing = () => {
                     ))}
                   </ul>
 
+                  {(plan.key === "pro" || plan.key === "premium") && (
+                    <p className="text-xs text-muted-foreground mb-4 text-center">
+                      Remove watermark for <span className="font-semibold text-foreground">$2/mo</span> as add-on
+                    </p>
+                  )}
+
                   {isCurrent ? (
                     <Button variant="outline" size="lg" disabled className="w-full">
                       Current Plan
