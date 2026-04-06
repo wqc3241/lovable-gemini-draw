@@ -135,6 +135,36 @@ const Index = () => {
       toast.error("Please enter a prompt");
       return;
     }
+
+    // Check credits for authenticated users
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      try {
+        const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
+          body: { action: "check", model, imageCount },
+        });
+        if (creditError) {
+          console.error("Credit check error:", creditError);
+          toast.error("Failed to check credits. Please try again.");
+          return;
+        }
+        if (!creditData?.allowed) {
+          // Determine reason
+          if (creditData?.reason === "model_restricted") {
+            setUpgradeReason("model_restricted");
+          } else if (creditData?.reason === "batch_restricted") {
+            setUpgradeReason("batch_restricted");
+          } else {
+            setUpgradeReason("daily_limit");
+          }
+          setUpgradeOpen(true);
+          return;
+        }
+      } catch (err) {
+        console.error("Credit check failed:", err);
+      }
+    }
+
     setIsGenerating(true);
     setGeneratedImages([]);
     setCurrentImageIndex(0);
