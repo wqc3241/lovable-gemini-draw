@@ -636,7 +636,7 @@ const Index = () => {
         // Decrement credits if logged in
         if (currentSession) {
           supabase.functions.invoke("check-credits", {
-            body: { action: "decrement", model: "google/gemini-2.5-flash-image-preview", imageCount: 1 },
+            body: { action: "decrement", generationType: "prompt", imageCount: 1 },
           }).then(({ error }) => {
             if (error) console.error("Failed to decrement credits:", error);
           });
