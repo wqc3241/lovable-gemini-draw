@@ -1,108 +1,83 @@
-# Design System Strategy: Cinematic Intelligence
+# Design System Strategy: High-Clarity Editorial
 
 ## 1. Overview & Creative North Star
-The Creative North Star for this design system is **"The Synthetic Auteur."** 
+**The Creative North Star: "The Pristine Curator"**
 
-This system is designed to bridge the gap between cold machine logic and fluid human creativity. We are moving away from the "SaaS-standard" look—characterized by rigid grids and heavy borders—and moving toward a high-end editorial experience. The interface should feel like a premium editing suite: immersive, deep, and focused. 
+This design system moves away from the "standard SaaS" aesthetic by embracing the ethos of high-end digital editorialism. By utilizing a pure white base (#FFFFFF) and the geometric rigor of Space Grotesk, we create an environment of extreme clarity and intellectual precision. 
 
-By leveraging intentional asymmetry, overlapping "glass" panels, and a hierarchy defined by light and shadow rather than lines, we create an environment where the content (video and AI-generated assets) remains the protagonist.
+The goal is to break the "template" look through **Intentional Asymmetry** and **Tonal Depth**. Instead of rigid, boxed-in grids, we use expansive white space and shifting surface tones to guide the eye. We treat the interface not as a software dashboard, but as a living document where the Deep Violet accent (#8B5CF6) acts as a "digital ink," punctuating the canvas with purpose.
 
 ---
 
-## 2. Colors & Surface Philosophy
-Our color palette is rooted in deep obsidian tones, punctuated by vibrant "energy sources" that signify AI activity.
+## 2. Colors & Surface Architecture
+The palette is anchored in absolute purity, using the primary violet to provide a sense of "Aetheric" energy against a sterile, high-clarity background.
 
 ### The "No-Line" Rule
-To maintain a premium, seamless aesthetic, **1px solid borders are prohibited for sectioning.** Boundaries between content areas must be defined solely through background color shifts. 
-- A sidebar uses `surface-container-low` (#1B1B1B).
-- The main workspace uses `surface` (#131313).
-- Floating panels use `surface-container-high` (#2A2A2A).
-This creates a sophisticated, "molded" look rather than a fragmented one.
+**Explicit Instruction:** Prohibit the use of 1px solid borders for sectioning. Structural boundaries must be defined solely through background color shifts or negative space. 
+*   Use `surface_container_low` (#f3f3f4) to subtly define a sidebar against a `surface` (#f9f9f9) main area.
+*   The pure `surface_container_lowest` (#ffffff) should be reserved for the most important interactive layers (like active cards) to make them "pop" against the off-white base.
 
 ### Surface Hierarchy & Nesting
-Treat the UI as a series of physical layers. Use the `surface-container` tiers to create depth:
-- **Level 0 (Base):** `surface` (#131313) for the primary background.
-- **Level 1 (Inland):** `surface-container-low` (#1B1B1B) for recessed areas like secondary sidebars.
-- **Level 2 (Raised):** `surface-container-high` (#2A2A2A) for cards or primary interactive modules.
-- **Level 3 (Floating):** `surface-container-highest` (#353535) for active states or elements closer to the user.
+Treat the UI as physical layers of fine paper. 
+*   **Base Layer:** `surface` (#f9f9f9)
+*   **Secondary Sectioning:** `surface_container` (#eeeeee)
+*   **Focus Elements:** `surface_container_lowest` (#ffffff) — This creates a "lifted" effect without heavy shadows.
 
-### Signature Textures
-- **The "AI Pulse" Gradient:** For primary AI-driven CTAs, use a linear gradient transitioning from `primary` (#d0bcff) to `primary-container` (#a078ff) at a 135-degree angle. This provides a tactile "glow" that flat colors cannot achieve.
-- **Glassmorphism:** For floating overlays (modals, dropdowns), use `surface-container-low` with 60% opacity and a `20px` backdrop-blur. This ensures the creative content behind the UI is never fully lost, maintaining immersion.
+### The "Glass & Gradient" Rule
+To prevent the pure white aesthetic from feeling "flat" or "cheap," apply subtle gradients to primary actions. 
+*   **Signature CTA:** Transition from `primary` (#6b38d4) to `primary_container` (#8455ef) at a 135-degree angle. This adds "soul" and dimension.
+*   **Glassmorphism:** For floating modals or navigation bars, use `surface_container_lowest` at 80% opacity with a `20px` backdrop-blur to allow the content underneath to bleed through softly.
 
 ---
 
-## 3. Typography: The Editorial Scale
-We pair the technical precision of **Inter** with the architectural character of **Space Grotesk**.
+## 3. Typography
+Space Grotesk is our voice. Its idiosyncratic terminals and geometric construction require significant breathing room to feel premium.
 
-- **Display & Headlines (Space Grotesk):** Used for large headers and "hero" moments. The wide apertures and geometric shapes of Space Grotesk convey high-tech sophistication.
-- **Body & Labels (Inter):** Used for all functional text. Inter provides maximum legibility in high-density creative tools.
-
-**Hierarchy as Identity:**
-- **Display-LG (3.5rem):** Use with `primary` color and `-0.04em` letter-spacing for a bold, cinematic impact.
-- **Headline-MD (1.75rem):** Use for section titles. Ensure generous top-margin (4x the spacing scale) to create "breathing room" typical of high-end magazines.
+*   **Display (lg/md):** Used for "Hero" moments. Use tight letter-spacing (-0.02em) to create a high-impact, editorial feel. 
+*   **Headline & Title:** These are your navigational anchors. Always use `on_surface` (#1a1c1c) to ensure maximum contrast against the white background.
+*   **Body (lg/md):** Set to `on_surface_variant` (#494454) for long-form reading to reduce eye strain, while maintaining the geometric clarity of the typeface.
+*   **Labels:** Use `label-md` in all-caps with increased letter-spacing (+0.05em) for a "metadata" or "archival" look.
 
 ---
 
 ## 4. Elevation & Depth
-Depth is achieved through **Tonal Layering** and light simulation, never through harsh structural lines.
+In this system, depth is a whisper, not a shout. We move away from traditional Material Design shadows in favor of **Tonal Layering**.
 
-### Ambient Shadows
-For floating elements (Tooltips, Popovers), use "Ambient Shadows":
-- **Color:** A tinted version of `on-surface` at 5% opacity.
-- **Blur:** Large diffusion (20px - 40px).
-- **Purpose:** To mimic natural light hitting a matte surface, creating a soft, organic lift.
-
-### The "Ghost Border" Fallback
-If a border is required for accessibility (e.g., in a high-density data grid), use a **Ghost Border**:
-- Token: `outline-variant` (#494454).
-- Opacity: **Reduced to 15%**.
-- Result: A hint of a boundary that disappears into the background upon quick glance.
+*   **The Layering Principle:** To highlight a card, don't add a shadow. Instead, place a `surface_container_lowest` (#ffffff) card on a `surface_container_low` (#f3f3f4) background. The change in hex code provides enough "natural lift."
+*   **Ambient Shadows:** For high-level floating elements (e.g., dropdowns), use a shadow color tinted with the primary violet: `rgba(107, 56, 212, 0.06)` with a `32px` blur and `12px` Y-offset.
+*   **The Ghost Border:** If a boundary is required for accessibility, use `outline_variant` (#cbc3d7) at **15% opacity**. It should be felt, not seen.
 
 ---
 
-## 5. Component Guidelines
+## 5. Components
 
-### Buttons (The "Tactile" Approach)
-- **Primary (AI-Action):** Use the "AI Pulse" Gradient. Border radius: `md` (0.75rem). No border.
-- **Secondary:** Surface-container-highest (#353535) background with `on-surface` text.
-- **Tertiary:** Transparent background, `primary` text. Use for low-emphasis navigation.
+### Buttons
+*   **Primary:** Gradient fill (`primary` to `primary_container`), `label-md` type in `on_primary` (#ffffff). High-contrast and authoritative.
+*   **Secondary:** No fill. `Ghost Border` (15% opacity `outline_variant`). Text in `primary` (#6b38d4).
+*   **Tertiary:** Text-only in `primary`. Interaction state uses a `surface_container_high` (#e8e8e8) ghost-pill background.
 
-### Cards & Creative Assets
-- **Rule:** Forbid divider lines. Use `surface-container-low` to house cards on a `surface` background.
-- **Radius:** All media containers must use `lg` (1rem) for a modern, handheld-device feel.
+### Cards & Lists
+*   **Zero-Line Policy:** Forbid divider lines. Separate list items using `16px` of vertical white space or alternating backgrounds using `surface` and `surface_container_low`.
+*   **Cards:** Use `lg` (0.5rem) or `xl` (0.75rem) corner radii. Avoid the `full` radius unless it's for a small tag or chip.
 
 ### Input Fields
-- **Surface:** `surface-container-lowest` (#0E0E0E) to create a "hollowed-out" effect.
-- **Active State:** A `1px` Ghost Border at 40% opacity using the `primary` color.
-- **Typography:** Always use `body-md`.
+*   **Default State:** Background `surface_container_low`, no border.
+*   **Focus State:** Background `surface_container_lowest`, 1px border in `primary` (#6b38d4).
+*   **Typography:** Helper text should use `label-sm` in `on_surface_variant`.
 
-### Chips (Meta-Tagging)
-- For AI-generated tags, use `secondary-container` (#B50036) with 20% opacity and `secondary` (#FFB2B7) text. This high-contrast, low-saturation look signals "automated" content.
-
-### Tooltips
-- Background: `inverse-surface` (#E2E2E2).
-- Text: `inverse-on-surface` (#303030).
-- Shadow: Ambient Shadow (Large blur, 8% opacity).
+### Chips
+*   **Filter Chips:** Use `surface_container_high` backgrounds with `on_surface` text. When selected, switch to `primary` background with `on_primary` text.
 
 ---
 
 ## 6. Do’s and Don’ts
 
 ### Do
-- **Do** use whitespace as a separator. If you think you need a line, try adding 24px of space instead.
-- **Do** use `primary` (#d0bcff) sparingly. It should feel like a "power source" that lights up the dark interface.
-- **Do** lean into asymmetry in landing page layouts—overlap an image over a text container using `z-index` to create editorial depth.
+*   **DO** use extreme vertical white space. If you think there’s enough space, add 24px more.
+*   **DO** use asymmetry. Align headers to the left but offset body content to create a "columnar" editorial layout.
+*   **DO** ensure all text on white backgrounds meets WCAG AA standards using the `on_surface` and `primary` tokens.
 
 ### Don’t
-- **Don’t** use pure black (#000000) for large surfaces. Use `surface` (#131313) to allow for subtle shadow depth.
-- **Don’t** use `none` or `sm` border radii unless for micro-icons. A premium feel requires the softness of `md` and `lg`.
-- **Don’t** use high-contrast transitions. All state changes (hover, active) should have a minimum `200ms` ease-in-out transition to mimic the fluid nature of video.
-
----
-
-## 7. Spacing & Rhythm
-We follow an 8px base grid, but for a premium feel, we prioritize **"Extreme Margin"** for layout-level containers:
-- **Section Padding:** 80px to 120px (Desktop).
-- **Component Gap:** 16px (`DEFAULT` radius scale logic).
-- **Internal Padding:** Always use `1.5rem` (`xl`) for card internals to ensure the content doesn't feel "choked."
+*   **DON'T** use pure black (#000000). Always use `on_surface` (#1a1c1c) to keep the aesthetic sophisticated and "ink-like."
+*   **DON'T** use 1px solid dividers to separate content sections. Use the color tokens `surface` vs `surface_container` to define areas.
+*   **DON'T** use standard "drop shadows." Use tonal shifts or ambient, tinted blurs.
