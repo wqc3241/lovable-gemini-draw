@@ -64,20 +64,20 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch prompt credits when logged in
-  const fetchPromptCredits = useCallback(async () => {
-    if (!session) { setPromptCredits(null); return; }
+  // Fetch monthly credits when logged in
+  const fetchCredits = useCallback(async () => {
+    if (!session) { setMonthlyCredits(null); return; }
     try {
       const { data, error } = await supabase.functions.invoke("check-credits", {
-        body: { action: "check", generationType: "prompt", imageCount: 1 },
+        body: { action: "check", model, imageCount: 1, generationType: mode },
       });
       if (!error && data) {
-        setPromptCredits({ used: data.used, limit: data.limit });
+        setMonthlyCredits({ remaining: data.creditsRemaining, total: data.creditsTotal });
       }
     } catch { /* ignore */ }
-  }, [session]);
+  }, [session, model, mode]);
 
-  useEffect(() => { fetchPromptCredits(); }, [fetchPromptCredits]);
+  useEffect(() => { fetchCredits(); }, [fetchCredits]);
 
   // Real-time public stats
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
