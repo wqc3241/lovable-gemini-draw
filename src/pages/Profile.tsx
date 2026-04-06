@@ -55,12 +55,12 @@ const Profile = () => {
   const loadData = async (userId: string) => {
     setLoading(true);
     try {
-      const [profileRes, creditsRes, subRes] = await Promise.all([
+      const [profileRes, creditsRes, subDbRes] = await Promise.all([
         supabase.from("profiles").select("display_name, avatar_url").eq("user_id", userId).single(),
         supabase.functions.invoke("check-credits", {
           body: { action: "check", model: "google/gemini-2.5-flash-image-preview", imageCount: 1, generationType: "generate" },
         }),
-        supabase.functions.invoke("check-subscription"),
+        supabase.from("subscriptions").select("plan, current_period_end, status").eq("user_id", userId).single(),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
@@ -69,10 +69,9 @@ const Profile = () => {
         setCreditsTotal(creditsRes.data.creditsTotal ?? 0);
         setWatermarkRemoved(creditsRes.data.watermarkRemoved || false);
       }
-      if (subRes.data) {
-        setCurrentPlan(subRes.data.plan || "free");
-        setSubscriptionEnd(subRes.data.subscription_end || null);
-        if (subRes.data.watermark_removed) setWatermarkRemoved(true);
+      if (subDbRes.data) {
+        setCurrentPlan(subDbRes.data.plan || "free");
+        setSubscriptionEnd(subDbRes.data.current_period_end || null);
       }
     } catch (e) {
       console.error("Failed to load profile data", e);
