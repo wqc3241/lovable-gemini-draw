@@ -103,7 +103,13 @@ const Pricing = () => {
   const checkSubscription = async () => {
     setIsCheckingSubscription(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", session.user.id)
+        .single();
       if (error) throw error;
       if (data?.plan) setCurrentPlan(data.plan);
     } catch (e) {
