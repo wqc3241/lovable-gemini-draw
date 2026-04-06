@@ -785,7 +785,23 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="model-select-edit" className="mb-2 block text-sm font-medium">
+                      Model
+                    </Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger id="model-select-edit" className="bg-background">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="google/gemini-2.5-flash-image-preview">Nano Banana (Fast)</SelectItem>
+                        <SelectItem value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (Balanced)</SelectItem>
+                        <SelectItem value="google/gemini-3-pro-image-preview">Pro (Best Quality)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div>
                     <Label htmlFor="aspect-ratio-edit" className="mb-2 block text-sm font-medium">
                       Aspect Ratio
