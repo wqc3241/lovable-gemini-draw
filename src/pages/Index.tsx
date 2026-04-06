@@ -70,6 +70,7 @@ const Index = () => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchStats]);
 
+  const scrollToResults = () => {
     if (isMobile && resultSectionRef.current) {
       setTimeout(() => {
         resultSectionRef.current?.scrollIntoView({
