@@ -12,7 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, imageData, aspectRatio, pastedImages } = await req.json();
+    const { prompt, imageData, aspectRatio, pastedImages, model } = await req.json();
+
+    // Validate model against allowlist
+    const ALLOWED_MODELS = [
+      "google/gemini-2.5-flash-image-preview",
+      "google/gemini-3.1-flash-image-preview",
+      "google/gemini-3-pro-image-preview",
+    ];
+    const selectedModel = ALLOWED_MODELS.includes(model) ? model : "google/gemini-2.5-flash-image-preview";
     
     if (!prompt) {
       return new Response(
