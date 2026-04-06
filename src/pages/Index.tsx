@@ -589,7 +589,7 @@ const Index = () => {
           </div>
           {/* Logo/Brand Name */}
           <div className="mb-4">
-            <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
+            <h1 className="mb-2 text-primary text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter font-display">
               Cinely.AI
             </h1>
           </div>
