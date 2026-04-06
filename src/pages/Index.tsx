@@ -1602,6 +1602,7 @@ const Index = () => {
       </Dialog>
     </div>
     <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} reason={upgradeReason} />
+    <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </>
   );
 };
