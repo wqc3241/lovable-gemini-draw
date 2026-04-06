@@ -18,6 +18,7 @@ import History from "./pages/History";
 import Pricing from "./pages/Pricing";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
