@@ -1274,7 +1274,7 @@ const Index = () => {
             </div>
 
             {/* Bottom Bar */}
-            <div className="pt-8 border-t border-border">
+            <div className="pt-8">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p className="text-xs text-muted-foreground text-center sm:text-left">
                   © {new Date().getFullYear()} Cinely.AI. All rights reserved.
