@@ -51,6 +51,14 @@ const Index = () => {
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
+  const [session, setSessionState] = useState<any>(null);
+
+  // Track auth state for UI gating
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => setSessionState(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => setSessionState(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Real-time public stats
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
@@ -159,8 +167,22 @@ const Index = () => {
       return;
     }
 
-    // Check credits for authenticated users
+    // Check auth — unauthenticated users can only use example prompts
     const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const isExamplePrompt = ALL_EXAMPLE_PROMPTS.some(
+        (ex) => ex.toLowerCase() === prompt.trim().toLowerCase()
+      );
+      if (!isExamplePrompt) {
+        toast.error("Create a free account to generate with custom prompts", {
+          action: {
+            label: "Sign Up",
+            onClick: () => window.location.href = "/auth",
+          },
+        });
+        return;
+      }
+    }
     if (session) {
       try {
         const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
@@ -803,6 +825,12 @@ const Index = () => {
                     </div>
                   )}
                 </div>
+
+                {!session && !ALL_EXAMPLE_PROMPTS.some((ex) => ex.toLowerCase() === prompt.trim().toLowerCase()) && prompt.trim() && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    <Link to="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">Sign up</Link> to generate with custom prompts
+                  </p>
+                )}
 
                 <Button
                   onClick={handleGenerate}
