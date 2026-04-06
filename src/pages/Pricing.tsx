@@ -18,7 +18,7 @@ const plans = [
     icon: Sparkles,
     description: "Get started with AI image generation",
     features: [
-      "3 generations per day",
+      "15 credits per month",
       "Nano Banana model only",
       "Up to 5 images per batch",
       "Watermarked images",
@@ -36,7 +36,7 @@ const plans = [
     icon: Zap,
     description: "For creators who need more power",
     features: [
-      "20 generations per day",
+      "150 credits per month",
       "All 3 AI models",
       "Up to 9 images per batch",
       "Watermarked images",
@@ -52,9 +52,9 @@ const plans = [
     price: "$24.99",
     period: "/month",
     icon: Crown,
-    description: "Unlimited creativity, zero limits",
+    description: "Maximum creativity, maximum credits",
     features: [
-      "Unlimited generations",
+      "500 credits per month",
       "All 3 AI models",
       "Up to 9 images per batch",
       "Watermarked images",
