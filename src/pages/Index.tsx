@@ -150,6 +150,7 @@ const Index = () => {
                 imageData: mode === "edit" ? uploadedImage : null,
                 aspectRatio,
                 pastedImages: pastedImages.length > 0 ? pastedImages : null,
+                model,
               },
             });
             return {

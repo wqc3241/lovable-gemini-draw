@@ -83,7 +83,7 @@ serve(async (req) => {
     }
 
     const requestBody: any = {
-      model: "google/gemini-2.5-flash-image-preview",
+      model: selectedModel,
       messages: [
         {
           role: "user",
