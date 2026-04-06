@@ -42,6 +42,8 @@ const Index = () => {
   const [promptImage, setPromptImage] = useState<string | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
