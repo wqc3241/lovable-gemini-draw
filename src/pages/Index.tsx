@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
+import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
