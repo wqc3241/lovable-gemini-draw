@@ -56,7 +56,7 @@ const Index = () => {
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
 
   const fetchStats = useCallback(async () => {
-    const { data } = await supabase.rpc("get_public_stats");
+    const { data } = await supabase.rpc("get_public_stats" as any);
     if (data) setStats(data as { total_users: number; total_images: number });
   }, []);
 
