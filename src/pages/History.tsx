@@ -69,7 +69,7 @@ const History = () => {
   return (
     <>
       <SEO title="History - Cinely.AI" description="View your generation history." url="https://cinely.ai/history" />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">

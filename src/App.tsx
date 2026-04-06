@@ -21,8 +21,8 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    // Force light mode by removing dark class
-    document.documentElement.classList.remove('dark');
+    // Force dark mode per design system — "The Synthetic Auteur"
+    document.documentElement.classList.add('dark');
   }, []);
 
   return (

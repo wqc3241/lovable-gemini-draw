@@ -149,7 +149,7 @@ const Pricing = () => {
         description="Choose the perfect plan for your AI image generation needs."
         url="https://cinely.ai/pricing"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -160,7 +160,7 @@ const Pricing = () => {
           </div>
 
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-black mb-4 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-black mb-4 text-primary font-display tracking-tighter">
               Simple, Transparent Pricing
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -170,7 +170,7 @@ const Pricing = () => {
 
           {/* Watermark removal add-on */}
           <div className="mb-8 text-center">
-            <Card className="inline-flex items-center gap-3 px-6 py-3 border-primary/20 bg-primary/5">
+            <Card className="inline-flex items-center gap-3 px-6 py-3 border-0 bg-surface-high rounded-md">
               <span className="text-sm font-medium">🎨 Remove watermarks on any plan</span>
               <Badge variant="secondary" className="font-bold">+$2/mo</Badge>
               {user && (
@@ -193,12 +193,12 @@ const Pricing = () => {
               return (
                 <Card
                   key={plan.name}
-                  className={`relative p-6 flex flex-col ${
+                  className={`relative p-6 flex flex-col border-0 rounded-lg ${
                     plan.accent
-                      ? "border-primary shadow-lg ring-2 ring-primary/20"
+                      ? "bg-surface-high shadow-glow ring-1 ring-primary/30"
                       : isCurrent
-                      ? "border-primary/50 ring-1 ring-primary/10"
-                      : "border-border"
+                      ? "bg-surface-high ring-1 ring-primary/15"
+                      : "bg-card"
                   }`}
                 >
                   {plan.popular && (

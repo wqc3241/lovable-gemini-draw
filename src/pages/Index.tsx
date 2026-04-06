@@ -580,7 +580,7 @@ const Index = () => {
         keywords={['AI image generator', 'text to image', 'AI art', 'image editing', 'AI tools', 'batch image processing', 'prompt engineering', 'AI visual studio', 'cinematic AI images']}
         url="https://cinely.ai"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 md:mb-12 text-center px-4 relative">
@@ -589,7 +589,7 @@ const Index = () => {
           </div>
           {/* Logo/Brand Name */}
           <div className="mb-4">
-            <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
+            <h1 className="mb-2 text-primary text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter font-display">
               Cinely.AI
             </h1>
           </div>
@@ -605,7 +605,7 @@ const Index = () => {
 
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full">
           {/* Input Section */}
-          <Card className="border-border bg-card p-6 shadow-lg">
+          <Card className="bg-card border-0 p-6 shadow-ambient rounded-lg">
             <Tabs
               value={mode}
               onValueChange={(v) => {
@@ -744,7 +744,7 @@ const Index = () => {
                   onClick={handleGenerate}
                   onTouchEnd={handleTouchGenerate}
                   disabled={isGenerating}
-                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90 active:scale-95 transition-transform touch-manipulation"
+                  className="w-full ai-pulse text-primary-foreground border-0 hover:opacity-90 active:scale-95 transition-transform touch-manipulation rounded-md shadow-glow"
                   style={{
                     WebkitTapHighlightColor: "transparent",
                   }}
@@ -771,7 +771,7 @@ const Index = () => {
                       <button
                         key={index}
                         onClick={() => setPrompt(example)}
-                        className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
+                        className="w-full rounded-lg bg-surface-high p-3 text-left text-sm text-foreground hover:bg-surface-highest border-0"
                       >
                         {example}
                       </button>
@@ -793,7 +793,7 @@ const Index = () => {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-background p-8 transition-colors hover:border-primary hover:bg-accent"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border/30 bg-surface-lowest p-8 hover:border-primary/40 hover:bg-surface-low"
                     >
                       {uploadedImage ? (
                         <img src={uploadedImage} alt="Uploaded" className="max-h-48 rounded-lg" />
@@ -921,7 +921,7 @@ const Index = () => {
                   onClick={handleGenerate}
                   onTouchEnd={handleTouchGenerate}
                   disabled={isGenerating || !uploadedImage}
-                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90 active:scale-95 transition-transform touch-manipulation"
+                  className="w-full ai-pulse text-primary-foreground border-0 hover:opacity-90 active:scale-95 transition-transform touch-manipulation rounded-md shadow-glow"
                   style={{
                     WebkitTapHighlightColor: "transparent",
                   }}
@@ -1019,7 +1019,7 @@ const Index = () => {
                       </Button>
                       <Button
                         onClick={handleUsePromptInGenerate}
-                        className="flex-1 bg-gradient-to-r from-primary to-accent-foreground"
+                        className="flex-1 ai-pulse border-0"
                       >
                         <Sparkles className="mr-2 h-4 w-4" />
                         Use in Generate
@@ -1032,7 +1032,7 @@ const Index = () => {
           </Card>
 
           {/* Output Section */}
-          <Card ref={resultSectionRef} className="border-border bg-card p-6 shadow-lg max-w-full overflow-hidden">
+          <Card ref={resultSectionRef} className="bg-card border-0 p-6 shadow-ambient max-w-full overflow-hidden rounded-lg">
             <div className="mb-4 max-w-full overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-semibold">
@@ -1078,7 +1078,7 @@ const Index = () => {
             </div>
 
             <div
-              className="relative w-full max-w-full overflow-hidden rounded-lg bg-muted/30 border border-border"
+              className="relative w-full max-w-full overflow-hidden rounded-lg bg-surface-lowest border-0"
               style={
                 generatedImages[currentImageIndex] && aspectRatio !== "auto"
                   ? {
@@ -1115,7 +1115,7 @@ const Index = () => {
                           e.stopPropagation();
                           navigateImage("prev");
                         }}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-surface-highest/80 hover:bg-surface-highest text-foreground rounded-full p-2 opacity-0 group-hover:opacity-100"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
@@ -1124,7 +1124,7 @@ const Index = () => {
                           e.stopPropagation();
                           navigateImage("next");
                         }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-surface-highest/80 hover:bg-surface-highest text-foreground rounded-full p-2 opacity-0 group-hover:opacity-100"
                       >
                         <ChevronRight className="h-5 w-5" />
                       </button>
@@ -1144,13 +1144,13 @@ const Index = () => {
         </div>
 
         {/* Info Footer */}
-        <footer className="mt-16 border-t border-border pt-12 pb-8">
+        <footer className="mt-16 pt-12 pb-8">
           <div className="max-w-6xl mx-auto px-4">
             {/* Main Footer Content */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
               {/* Brand Column */}
               <div className="sm:col-span-2 lg:col-span-1">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent mb-3">
+                <h3 className="text-2xl font-bold text-primary font-display mb-3">
                   Cinely.AI
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -1274,7 +1274,7 @@ const Index = () => {
             </div>
 
             {/* Bottom Bar */}
-            <div className="pt-8 border-t border-border">
+            <div className="pt-8">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p className="text-xs text-muted-foreground text-center sm:text-left">
                   © {new Date().getFullYear()} Cinely.AI. All rights reserved.
@@ -1300,7 +1300,7 @@ const Index = () => {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-background/90 backdrop-blur-xl">
           <div className="relative w-full h-full flex items-center justify-center">
             {generatedImages[currentImageIndex] && (
               <>
@@ -1319,7 +1319,7 @@ const Index = () => {
                         e.stopPropagation();
                         navigateImage("prev");
                       }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-surface-highest/80 hover:bg-surface-highest text-foreground rounded-full p-3"
                     >
                       <ChevronLeft className="h-6 w-6" />
                     </button>
@@ -1328,11 +1328,11 @@ const Index = () => {
                         e.stopPropagation();
                         navigateImage("next");
                       }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-surface-highest/80 hover:bg-surface-highest text-foreground rounded-full p-3"
                     >
                       <ChevronRight className="h-6 w-6" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/70 px-4 py-2 rounded-full">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-foreground text-sm bg-surface-highest/80 px-4 py-2 rounded-full">
                       {currentImageIndex + 1} / {generatedImages.length}
                     </div>
                   </>

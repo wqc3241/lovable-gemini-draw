@@ -90,7 +90,7 @@ const Auth = () => {
         description="Sign in or create an account to save your generation history."
         url="https://cinely.ai/auth"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -99,9 +99,9 @@ const Auth = () => {
             </Link>
           </div>
 
-          <Card className="p-6 shadow-lg border-border bg-card">
+          <Card className="p-6 shadow-ambient border-0 bg-card rounded-lg">
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary font-display">
                 Cinely.AI
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Sign in to save your creations</p>
