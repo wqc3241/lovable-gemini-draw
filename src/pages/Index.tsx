@@ -186,7 +186,7 @@ const Index = () => {
     if (session) {
       try {
         const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
-          body: { action: "check", model, imageCount },
+          body: { action: "check", model, imageCount, generationType: mode },
         });
         if (creditError) {
           console.error("Credit check error:", creditError);
