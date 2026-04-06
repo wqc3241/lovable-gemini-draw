@@ -1317,6 +1317,11 @@ const Index = () => {
                       </li>
                     ))}
                   </ul>
+                  {(plan.key === "pro" || plan.key === "premium") && (
+                    <p className="text-xs text-muted-foreground mb-4 text-center">
+                      Remove watermark for <span className="font-semibold text-foreground">$2/mo</span> as add-on
+                    </p>
+                  )}
                   <Link to="/pricing">
                     <Button className="w-full" variant={plan.accent ? "default" : "outline"}>
                       {plan.key === "free" ? "Get Started" : `Upgrade to ${plan.name}`}
