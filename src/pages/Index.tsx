@@ -649,12 +649,13 @@ const Index = () => {
         setAnalyzedPrompt(data.prompt);
         toast.success("Prompt generated successfully!");
 
-        // Decrement credits if logged in
+        // Decrement credits and refresh counter if logged in
         if (currentSession) {
           supabase.functions.invoke("check-credits", {
             body: { action: "decrement", generationType: "prompt", imageCount: 1 },
           }).then(({ error }) => {
             if (error) console.error("Failed to decrement credits:", error);
+            fetchPromptCredits();
           });
         }
       } else {
