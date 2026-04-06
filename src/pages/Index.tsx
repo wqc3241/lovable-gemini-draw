@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
 import UserMenu from "@/components/UserMenu";
+import UpgradeDialog from "@/components/UpgradeDialog";
 import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -41,6 +42,8 @@ const Index = () => {
   const [promptImage, setPromptImage] = useState<string | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
@@ -132,6 +135,36 @@ const Index = () => {
       toast.error("Please enter a prompt");
       return;
     }
+
+    // Check credits for authenticated users
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      try {
+        const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
+          body: { action: "check", model, imageCount },
+        });
+        if (creditError) {
+          console.error("Credit check error:", creditError);
+          toast.error("Failed to check credits. Please try again.");
+          return;
+        }
+        if (!creditData?.allowed) {
+          // Determine reason
+          if (creditData?.reason === "model_restricted") {
+            setUpgradeReason("model_restricted");
+          } else if (creditData?.reason === "batch_restricted") {
+            setUpgradeReason("batch_restricted");
+          } else {
+            setUpgradeReason("daily_limit");
+          }
+          setUpgradeOpen(true);
+          return;
+        }
+      } catch (err) {
+        console.error("Credit check failed:", err);
+      }
+    }
+
     setIsGenerating(true);
     setGeneratedImages([]);
     setCurrentImageIndex(0);
@@ -251,9 +284,17 @@ const Index = () => {
         setPastedImages([]); // Clear pasted images after successful generation
         scrollToResults(); // Auto-scroll to results on mobile
 
-        // Save to history if logged in
+        // Save to history and decrement credits if logged in
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
+            // Decrement credits
+            supabase.functions.invoke("check-credits", {
+              body: { action: "decrement", model, imageCount: successCount },
+            }).then(({ error }) => {
+              if (error) console.error("Failed to decrement credits:", error);
+            });
+
+            // Save to history
             newImages.forEach((imageUrl) => {
               supabase.from("generation_history").insert({
                 user_id: session.user.id,
@@ -1343,6 +1384,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
     </div>
+    <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} reason={upgradeReason} />
     </>
   );
 };
