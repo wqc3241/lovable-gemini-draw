@@ -18,6 +18,7 @@ import History from "./pages/History";
 import Pricing from "./pages/Pricing";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
