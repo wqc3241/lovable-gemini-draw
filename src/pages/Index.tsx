@@ -219,7 +219,7 @@ const Index = () => {
           } else if (creditData?.reason === "batch_restricted") {
             setUpgradeReason("batch_restricted");
           } else {
-            setUpgradeReason("daily_limit");
+            setUpgradeReason("credit_limit");
           }
           setUpgradeOpen(true);
           return;
