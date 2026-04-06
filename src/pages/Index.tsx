@@ -55,7 +55,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
-  const [promptCredits, setPromptCredits] = useState<{ used: number; limit: number | "unlimited" } | null>(null);
+  const [monthlyCredits, setMonthlyCredits] = useState<{ remaining: number; total: number } | null>(null);
 
   // Track auth state for UI gating
   useEffect(() => {
