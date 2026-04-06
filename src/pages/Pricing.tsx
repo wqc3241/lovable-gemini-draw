@@ -160,7 +160,7 @@ const Pricing = () => {
           </div>
 
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-black mb-4 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-black mb-4 text-primary font-display tracking-tighter">
               Simple, Transparent Pricing
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
