@@ -1319,7 +1319,7 @@ const Index = () => {
                         e.stopPropagation();
                         navigateImage("prev");
                       }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-surface-highest/80 hover:bg-surface-highest text-foreground rounded-full p-3"
                     >
                       <ChevronLeft className="h-6 w-6" />
                     </button>
