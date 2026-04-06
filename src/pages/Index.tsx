@@ -1252,6 +1252,11 @@ const Index = () => {
                 <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h4>
                 <ul className="space-y-3">
                   <li>
+                    <Link to="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      Pricing
+                    </Link>
+                  </li>
+                  <li>
                     <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       Documentation
                     </a>
