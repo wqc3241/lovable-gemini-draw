@@ -39,6 +39,7 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [promptImage, setPromptImage] = useState<string | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
+  const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
