@@ -170,6 +170,15 @@ const Auth = () => {
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
                     Sign In
                   </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
