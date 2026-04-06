@@ -271,13 +271,44 @@ const Profile = () => {
         {/* Quick Actions */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
           <h2 className="text-sm font-medium text-muted-foreground mb-4">Quick Actions</h2>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="outline" size="sm" onClick={() => navigate("/history")} className="gap-2">
               <History className="h-4 w-4" /> Generation History
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="gap-2">
               <CreditCard className="h-4 w-4" /> Pricing
             </Button>
+            <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <MessageSquare className="h-4 w-4" /> Submit Feedback
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Submit Feedback</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <Textarea
+                    placeholder="Tell us what you think, report a bug, or suggest a feature..."
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    rows={5}
+                    maxLength={2000}
+                  />
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{feedbackText.length}/2000</span>
+                    <Button
+                      onClick={handleSubmitFeedback}
+                      disabled={!feedbackText.trim() || feedbackLoading}
+                      size="sm"
+                    >
+                      {feedbackLoading ? "Sending..." : "Send Feedback"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
