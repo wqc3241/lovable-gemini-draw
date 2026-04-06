@@ -50,6 +50,7 @@ const Index = () => {
   const [model, setModel] = useState("google/gemini-2.5-flash-image-preview");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"daily_limit" | "model_restricted" | "batch_restricted">("daily_limit");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
