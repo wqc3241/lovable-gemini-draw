@@ -119,6 +119,25 @@ const Profile = () => {
     toast.success("Signed out");
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!feedbackText.trim() || !user) return;
+    setFeedbackLoading(true);
+    try {
+      const { error } = await supabase.from("feedback").insert({
+        user_id: user.id,
+        message: feedbackText.trim(),
+      });
+      if (error) throw error;
+      toast.success("Thank you for your feedback!");
+      setFeedbackText("");
+      setFeedbackOpen(false);
+    } catch {
+      toast.error("Failed to submit feedback");
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
