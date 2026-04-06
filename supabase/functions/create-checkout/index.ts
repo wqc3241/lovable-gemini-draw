@@ -24,28 +24,37 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    console.log("[CREATE-CHECKOUT] Function invoked");
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError) throw new Error(`Auth error: ${authError.message}`);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { plan } = await req.json();
+    const body = await req.json();
+    const plan = body.plan;
+    console.log("[CREATE-CHECKOUT] Plan requested:", plan);
     const priceId = PRICE_MAP[plan];
     if (!priceId) throw new Error("Invalid plan");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    console.log("[CREATE-CHECKOUT] Stripe key present:", !!stripeKey);
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
+    console.log("[CREATE-CHECKOUT] Looking up Stripe customer for:", user.email);
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
+    console.log("[CREATE-CHECKOUT] Customer ID:", customerId || "new customer");
 
-    // Build line items - for watermark removal, add it alongside existing sub
     const lineItems = [{ price: priceId, quantity: 1 }];
+    console.log("[CREATE-CHECKOUT] Creating checkout session with priceId:", priceId);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -55,12 +64,14 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/pricing?success=true`,
       cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
     });
+    console.log("[CREATE-CHECKOUT] Session created:", session.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
+    console.error("[CREATE-CHECKOUT] ERROR:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
