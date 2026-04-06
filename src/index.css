@@ -1,111 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Cinely.AI Design System — "The Synthetic Auteur"
+   Dark cinematic palette. No hard borders. Glass & depth.
+   All colors MUST be HSL. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    /* Surface hierarchy (obsidian tones) */
+    --background: 0 0% 7.5%;          /* #131313 — Level 0 Base */
+    --foreground: 0 0% 89%;           /* #E2E2E2 */
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 9%;
+    --card: 0 0% 10.5%;              /* #1B1B1B — Level 1 Inland */
+    --card-foreground: 0 0% 89%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover: 0 0% 16.5%;           /* #2A2A2A — Level 2 Raised */
+    --popover-foreground: 0 0% 89%;
 
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary — The "power source" lavender */
+    --primary: 263 100% 80%;          /* #d0bcff */
+    --primary-foreground: 263 30% 15%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 0 0% 9%;
+    /* Primary container for gradient end */
+    --primary-container: 263 100% 62%; /* #a078ff */
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    /* Secondary — cinematic red accent */
+    --secondary: 355 100% 85%;        /* #FFB2B7 */
+    --secondary-foreground: 355 100% 35%;
+    --secondary-container: 355 100% 35%; /* #B50036 at 20% opacity via usage */
 
-    --accent: 263 70% 95%;
-    --accent-foreground: 263 70% 50%;
+    --muted: 0 0% 13%;               /* Level 1.5 */
+    --muted-foreground: 0 0% 55%;
 
-    --destructive: 0 84% 60%;
+    /* Accent — surface-container-high */
+    --accent: 0 0% 16.5%;            /* #2A2A2A */
+    --accent-foreground: 263 100% 80%;
+
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 263 70% 50%;
+    /* Ghost borders & inputs */
+    --border: 263 12% 30%;            /* outline-variant #494454 at ~15% effective */
+    --input: 0 0% 5.5%;              /* surface-container-lowest #0E0E0E */
+    --ring: 263 100% 80%;
 
     --radius: 0.75rem;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%) 0%, hsl(280 90% 60%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(240 5% 98%) 100%);
-    --shadow-glow: 0 4px 20px hsl(263 70% 50% / 0.15);
 
-    --sidebar-background: 0 0% 98%;
+    /* Signature textures */
+    --gradient-primary: linear-gradient(135deg, hsl(263 100% 80%) 0%, hsl(263 100% 62%) 100%);
+    --shadow-ambient: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 24px hsl(263 100% 80% / 0.15);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Surface tiers for manual use */
+    --surface-lowest: 0 0% 5.5%;     /* #0E0E0E */
+    --surface-low: 0 0% 10.5%;       /* #1B1B1B */
+    --surface-high: 0 0% 16.5%;      /* #2A2A2A */
+    --surface-highest: 0 0% 21%;     /* #353535 */
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Inverse for tooltips */
+    --inverse-surface: 0 0% 89%;     /* #E2E2E2 */
+    --inverse-on-surface: 0 0% 19%;  /* #303030 */
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 10.5%;
+    --sidebar-foreground: 0 0% 89%;
+    --sidebar-primary: 263 100% 80%;
+    --sidebar-primary-foreground: 263 30% 15%;
+    --sidebar-accent: 0 0% 16.5%;
+    --sidebar-accent-foreground: 0 0% 89%;
+    --sidebar-border: 263 12% 30%;
+    --sidebar-ring: 263 100% 80%;
   }
 
+  /* Override dark class to same values (always dark) */
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 7%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 7%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 263 70% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
+    --background: 0 0% 7.5%;
+    --foreground: 0 0% 89%;
+    --card: 0 0% 10.5%;
+    --card-foreground: 0 0% 89%;
+    --popover: 0 0% 16.5%;
+    --popover-foreground: 0 0% 89%;
+    --primary: 263 100% 80%;
+    --primary-foreground: 263 30% 15%;
+    --primary-container: 263 100% 62%;
+    --secondary: 355 100% 85%;
+    --secondary-foreground: 355 100% 35%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 16.5%;
+    --accent-foreground: 263 100% 80%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
-
-    --border: 240 6% 20%;
-    --input: 240 6% 20%;
-    --ring: 263 70% 50%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 263 12% 30%;
+    --input: 0 0% 5.5%;
+    --ring: 263 100% 80%;
+    --sidebar-background: 0 0% 10.5%;
+    --sidebar-foreground: 0 0% 89%;
+    --sidebar-primary: 263 100% 80%;
+    --sidebar-primary-foreground: 263 30% 15%;
+    --sidebar-accent: 0 0% 16.5%;
+    --sidebar-accent-foreground: 0 0% 89%;
+    --sidebar-border: 263 12% 30%;
+    --sidebar-ring: 263 100% 80%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border/15;
+    transition-property: color, background-color, border-color, opacity, box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  h1 {
+    letter-spacing: -0.04em;
+  }
+}
+
+/* Utility: glass effect for floating panels */
+.glass {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Utility: AI pulse gradient background */
+.ai-pulse {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-container)) 100%);
 }
 
 .scrollbar-hide::-webkit-scrollbar {
