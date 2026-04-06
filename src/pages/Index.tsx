@@ -600,7 +600,7 @@ const Index = () => {
     if (currentSession) {
       try {
         const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
-          body: { action: "check", model: "google/gemini-2.5-flash-image-preview", imageCount: 1 },
+          body: { action: "check", generationType: "prompt", imageCount: 1 },
         });
         if (creditError) {
           console.error("Credit check error:", creditError);
