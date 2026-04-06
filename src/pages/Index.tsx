@@ -1086,13 +1086,11 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="prompt" className="space-y-4">
-                {session && promptCredits && (
+                {session && monthlyCredits && (
                   <div className="flex items-center justify-between rounded-md bg-surface-high px-3 py-2">
-                    <span className="text-xs text-muted-foreground">Prompt analyses today</span>
+                    <span className="text-xs text-muted-foreground">Monthly credits</span>
                     <span className="text-xs font-semibold text-foreground">
-                      {promptCredits.limit === "unlimited"
-                        ? `${promptCredits.used} used · Unlimited`
-                        : `${promptCredits.used} / ${promptCredits.limit} used`}
+                      {monthlyCredits.remaining} / {monthlyCredits.total} remaining
                     </span>
                   </div>
                 )}
