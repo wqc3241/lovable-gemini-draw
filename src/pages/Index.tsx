@@ -30,6 +30,7 @@ import cinellyLogoImg from "@/assets/cinely-logo.png";
 import ImageSlideshow from "@/components/ImageSlideshow";
 import UserMenu from "@/components/UserMenu";
 import UpgradeDialog from "@/components/UpgradeDialog";
+import AuthDialog from "@/components/AuthDialog";
 import { SEO } from "@/components/SEO";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
