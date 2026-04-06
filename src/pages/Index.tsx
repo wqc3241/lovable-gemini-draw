@@ -159,8 +159,22 @@ const Index = () => {
       return;
     }
 
-    // Check credits for authenticated users
+    // Check auth — unauthenticated users can only use example prompts
     const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const isExamplePrompt = ALL_EXAMPLE_PROMPTS.some(
+        (ex) => ex.toLowerCase() === prompt.trim().toLowerCase()
+      );
+      if (!isExamplePrompt) {
+        toast.error("Create a free account to generate with custom prompts", {
+          action: {
+            label: "Sign Up",
+            onClick: () => window.location.href = "/auth",
+          },
+        });
+        return;
+      }
+    }
     if (session) {
       try {
         const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
