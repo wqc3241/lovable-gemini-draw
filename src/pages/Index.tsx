@@ -771,7 +771,7 @@ const Index = () => {
                       <button
                         key={index}
                         onClick={() => setPrompt(example)}
-                        className="w-full rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-accent"
+                        className="w-full rounded-lg bg-surface-high p-3 text-left text-sm text-foreground hover:bg-surface-highest border-0"
                       >
                         {example}
                       </button>
