@@ -33,7 +33,9 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { plan } = await req.json();
+    const body = await req.json();
+    const plan = body.plan;
+    console.log("[CREATE-CHECKOUT] Plan requested:", plan);
     const priceId = PRICE_MAP[plan];
     if (!priceId) throw new Error("Invalid plan");
 
