@@ -1144,7 +1144,7 @@ const Index = () => {
         </div>
 
         {/* Info Footer */}
-        <footer className="mt-16 border-t border-border pt-12 pb-8">
+        <footer className="mt-16 pt-12 pb-8">
           <div className="max-w-6xl mx-auto px-4">
             {/* Main Footer Content */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
