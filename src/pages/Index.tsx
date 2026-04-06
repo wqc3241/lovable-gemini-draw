@@ -284,9 +284,17 @@ const Index = () => {
         setPastedImages([]); // Clear pasted images after successful generation
         scrollToResults(); // Auto-scroll to results on mobile
 
-        // Save to history if logged in
+        // Save to history and decrement credits if logged in
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
+            // Decrement credits
+            supabase.functions.invoke("check-credits", {
+              body: { action: "decrement", model, imageCount: successCount },
+            }).then(({ error }) => {
+              if (error) console.error("Failed to decrement credits:", error);
+            });
+
+            // Save to history
             newImages.forEach((imageUrl) => {
               supabase.from("generation_history").insert({
                 user_id: session.user.id,
