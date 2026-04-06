@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, History, CreditCard, LogOut, Crown, Sparkles, Shield } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, History, CreditCard, LogOut, Crown, Sparkles, Shield, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
@@ -40,6 +42,9 @@ const Profile = () => {
   const [creditsTotal, setCreditsTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -112,6 +117,25 @@ const Profile = () => {
     await supabase.auth.signOut();
     navigate("/");
     toast.success("Signed out");
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackText.trim() || !user) return;
+    setFeedbackLoading(true);
+    try {
+      const { error } = await supabase.from("feedback").insert({
+        user_id: user.id,
+        message: feedbackText.trim(),
+      });
+      if (error) throw error;
+      toast.success("Thank you for your feedback!");
+      setFeedbackText("");
+      setFeedbackOpen(false);
+    } catch {
+      toast.error("Failed to submit feedback");
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   if (loading) {
@@ -247,13 +271,44 @@ const Profile = () => {
         {/* Quick Actions */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
           <h2 className="text-sm font-medium text-muted-foreground mb-4">Quick Actions</h2>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="outline" size="sm" onClick={() => navigate("/history")} className="gap-2">
               <History className="h-4 w-4" /> Generation History
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="gap-2">
               <CreditCard className="h-4 w-4" /> Pricing
             </Button>
+            <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <MessageSquare className="h-4 w-4" /> Submit Feedback
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Submit Feedback</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <Textarea
+                    placeholder="Tell us what you think, report a bug, or suggest a feature..."
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    rows={5}
+                    maxLength={2000}
+                  />
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{feedbackText.length}/2000</span>
+                    <Button
+                      onClick={handleSubmitFeedback}
+                      disabled={!feedbackText.trim() || feedbackLoading}
+                      size="sm"
+                    >
+                      {feedbackLoading ? "Sending..." : "Send Feedback"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
