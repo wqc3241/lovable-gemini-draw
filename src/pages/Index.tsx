@@ -594,6 +594,31 @@ const Index = () => {
       toast.error("Please upload an image first");
       return;
     }
+
+    // Check credits for authenticated users (counts as 1 generation)
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession) {
+      try {
+        const { data: creditData, error: creditError } = await supabase.functions.invoke("check-credits", {
+          body: { action: "check", model: "google/gemini-2.5-flash-image-preview", imageCount: 1 },
+        });
+        if (creditError) {
+          console.error("Credit check error:", creditError);
+          toast.error("Failed to check credits. Please try again.");
+          return;
+        }
+        if (!creditData?.allowed) {
+          if (creditData?.reason === "daily_limit") {
+            setUpgradeReason("daily_limit");
+          }
+          setUpgradeOpen(true);
+          return;
+        }
+      } catch (err) {
+        console.error("Credit check failed:", err);
+      }
+    }
+
     setIsAnalyzing(true);
     setAnalyzedPrompt("");
     try {
@@ -607,6 +632,15 @@ const Index = () => {
       if (data?.prompt) {
         setAnalyzedPrompt(data.prompt);
         toast.success("Prompt generated successfully!");
+
+        // Decrement credits if logged in
+        if (currentSession) {
+          supabase.functions.invoke("check-credits", {
+            body: { action: "decrement", model: "google/gemini-2.5-flash-image-preview", imageCount: 1 },
+          }).then(({ error }) => {
+            if (error) console.error("Failed to decrement credits:", error);
+          });
+        }
       } else {
         throw new Error("No prompt returned");
       }
