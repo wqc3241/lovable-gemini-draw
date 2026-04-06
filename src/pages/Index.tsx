@@ -195,7 +195,7 @@ const Index = () => {
         toast.error("Create a free account to generate with custom prompts", {
           action: {
             label: "Sign Up",
-            onClick: () => window.location.href = "/auth",
+            onClick: () => setAuthDialogOpen(true),
           },
         });
         return;
