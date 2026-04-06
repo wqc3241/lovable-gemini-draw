@@ -881,7 +881,7 @@ const Index = () => {
 
                 {!session && !ALL_EXAMPLE_PROMPTS.some((ex) => ex.toLowerCase() === prompt.trim().toLowerCase()) && prompt.trim() && (
                   <p className="text-xs text-muted-foreground text-center">
-                    <Link to="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">Sign up</Link> to generate with custom prompts
+                    <button onClick={() => setAuthDialogOpen(true)} className="text-primary underline underline-offset-2 hover:opacity-80">Sign up</button> to generate with custom prompts
                   </p>
                 )}
 
