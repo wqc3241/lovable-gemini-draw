@@ -793,7 +793,7 @@ const Index = () => {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-background p-8 transition-colors hover:border-primary hover:bg-accent"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border/30 bg-surface-lowest p-8 hover:border-primary/40 hover:bg-surface-low"
                     >
                       {uploadedImage ? (
                         <img src={uploadedImage} alt="Uploaded" className="max-h-48 rounded-lg" />
