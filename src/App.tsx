@@ -16,6 +16,7 @@ import BatchProcessingGuide from "./pages/BatchProcessingGuide";
 import Auth from "./pages/Auth";
 import History from "./pages/History";
 import Pricing from "./pages/Pricing";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
