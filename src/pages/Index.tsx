@@ -921,7 +921,7 @@ const Index = () => {
                   onClick={handleGenerate}
                   onTouchEnd={handleTouchGenerate}
                   disabled={isGenerating || !uploadedImage}
-                  className="w-full bg-gradient-to-r from-primary to-accent-foreground text-primary-foreground hover:opacity-90 active:scale-95 transition-transform touch-manipulation"
+                  className="w-full ai-pulse text-primary-foreground border-0 hover:opacity-90 active:scale-95 transition-transform touch-manipulation rounded-md shadow-glow"
                   style={{
                     WebkitTapHighlightColor: "transparent",
                   }}
