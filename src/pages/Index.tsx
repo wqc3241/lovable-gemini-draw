@@ -565,7 +565,10 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 md:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <header className="mb-8 md:mb-12 text-center px-4">
+        <header className="mb-8 md:mb-12 text-center px-4 relative">
+          <div className="absolute right-0 top-0">
+            <UserMenu />
+          </div>
           {/* Logo/Brand Name */}
           <div className="mb-4">
             <h1 className="mb-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-transparent tracking-tight">
