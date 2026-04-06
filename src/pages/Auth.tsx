@@ -99,7 +99,7 @@ const Auth = () => {
             </Link>
           </div>
 
-          <Card className="p-6 shadow-lg border-border bg-card">
+          <Card className="p-6 shadow-ambient border-0 bg-card rounded-lg">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 bg-clip-text text-transparent">
                 Cinely.AI
