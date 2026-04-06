@@ -1357,20 +1357,26 @@ const Index = () => {
               },
             ].map((plan) => {
               const Icon = plan.icon;
+              const isCurrent = currentPlan === plan.key;
               return (
                 <Card
                   key={plan.key}
                   className={`relative p-6 flex flex-col border ${
-                    plan.accent ? "border-primary shadow-lg shadow-primary/10" : "border-border"
+                    isCurrent ? "border-primary shadow-lg shadow-primary/10 ring-2 ring-primary/20" : plan.accent ? "border-primary shadow-lg shadow-primary/10" : "border-border"
                   }`}
                 >
-                  {plan.popular && (
+                  {isCurrent && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                      Your Plan
+                    </span>
+                  )}
+                  {plan.popular && !isCurrent && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       Most Popular
                     </span>
                   )}
                   <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`h-5 w-5 ${plan.accent ? "text-primary" : "text-muted-foreground"}`} />
+                    <Icon className={`h-5 w-5 ${isCurrent || plan.accent ? "text-primary" : "text-muted-foreground"}`} />
                     <h3 className="text-lg font-bold">{plan.name}</h3>
                   </div>
                   <div className="mb-1">
@@ -1399,8 +1405,8 @@ const Index = () => {
                   )}
                   <Button
                     className="w-full"
-                    variant={plan.accent ? "default" : "outline"}
-                    disabled={checkoutLoading === plan.key}
+                    variant={isCurrent ? "secondary" : plan.accent ? "default" : "outline"}
+                    disabled={isCurrent || checkoutLoading === plan.key}
                     onClick={async () => {
                       if (plan.key === "free") {
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1425,7 +1431,7 @@ const Index = () => {
                     }}
                   >
                     {checkoutLoading === plan.key && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    {plan.key === "free" ? "Get Started" : !session ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
+                    {isCurrent ? "Current Plan" : plan.key === "free" ? "Get Started" : !session ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
                   </Button>
                 </Card>
               );
