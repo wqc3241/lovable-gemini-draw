@@ -1,36 +1,59 @@
 
 
-## Plan: Fix Pricing Page Colors & Inline Pricing Actions
+## Plan: Redesign History Page with Grouped Generations
 
-### What changes
+### Problem
+Currently, each image is shown as a separate card in a flat grid. Users can't see the full prompt (it's truncated to 2 lines), and images from the same generation batch are scattered individually.
 
-**1. Pricing page (`src/pages/Pricing.tsx`) — match home page design system**
+### UI Layout
 
-The pricing page uses some styling that doesn't align with the home page's "Pristine Curator" system:
-- Plan cards use `border-0` inconsistently and lack the tonal layering from the home page
-- The Pro card uses `bg-surface-high shadow-glow ring-1 ring-primary/30` which differs from the home page's `border-primary shadow-lg shadow-primary/10`
-- Will unify card styling, badge styling, and button variants to match the home page pricing section exactly
+```text
+┌─────────────────────────────────────────────────────┐
+│  ← Back                                   [Avatar]  │
+│                                                     │
+│  Generation History                                 │
+│                                                     │
+│  ┌─────────────────────────────────────────────────┐│
+│  │ April 5, 2026                                   ││
+│  │                                                 ││
+│  │ "A cinematic shot of a futuristic city at       ││
+│  │  sunset with flying cars and neon lights..."     ││
+│  │                                                 ││
+│  │ ┌────────┐ ┌────────┐ ┌────────┐        [🗑]   ││
+│  │ │  img1  │ │  img2  │ │  img3  │               ││
+│  │ └────────┘ └────────┘ └────────┘               ││
+│  │                                                 ││
+│  │ Generate · Pro                                  ││
+│  └─────────────────────────────────────────────────┘│
+│                                                     │
+│  ┌─────────────────────────────────────────────────┐│
+│  │ April 4, 2026                                   ││
+│  │ "Portrait of a woman..."                        ││
+│  │ ┌────────┐                              [🗑]   ││
+│  │ │  img1  │                                     ││
+│  │ └────────┘                                     ││
+│  │ Edit · Nano Banana                              ││
+│  └─────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────┘
+```
 
-**2. Home page pricing buttons — open checkout directly instead of redirecting**
+### Changes
 
-Currently, clicking "Upgrade to Pro" or "Upgrade to Premium" on the home page wraps buttons in `<Link to="/pricing">`. Instead:
-- Replace the `<Link>` wrapper with direct `handleCheckout` calls (same logic as the Pricing page)
-- For unauthenticated users, open the auth dialog instead of navigating away
-- The "Get Started" button on the Free plan will scroll to the top / focus the prompt input
-- Keep the footer "Pricing" link as-is (it's a navigation link, not an action button)
+**`src/pages/History.tsx`** — single file change:
 
-### Technical details
+1. **Group history items** by prompt + mode + model + created_at (rounded to the same minute) to cluster images from the same generation batch
+2. **Render grouped cards** — each card shows:
+   - Date at top right (e.g. "April 5, 2026 at 3:42 PM")
+   - Full prompt text (no `line-clamp` truncation), with expand/collapse for very long prompts (>200 chars)
+   - Horizontal row of image thumbnails (scrollable if many)
+   - Mode and model label at bottom
+   - Delete button deletes all images in the group
+3. **Click image** opens a lightbox/fullscreen dialog to view at full size
+4. Styling uses `bg-card border-border` cards consistent with the home page design system
 
-**`src/pages/Pricing.tsx`** — Update card classes to match home page pattern:
-- Cards: use `border border-border` for non-accent, `border-primary shadow-lg shadow-primary/10` for accent (Pro)
-- Remove `bg-surface-high` usage, use `bg-card` consistently
-- Badge: use inline `<span>` with rounded-full styling matching home page
-- Ensure consistent font sizing and spacing
-
-**`src/pages/Index.tsx`** — In the pricing section (~lines 1388-1392):
-- Remove `<Link to="/pricing">` wrapper
-- Add `handleCheckout` function (invoke `create-checkout` edge function, same as Pricing page)
-- For unauthenticated users, open `authDialogOpen` instead
-- For "Free" plan button, scroll to top with `window.scrollTo(0, 0)`
-- Add loading state for checkout buttons
+### Technical Details
+- Group by: `prompt + mode + model + created_at` (truncated to nearest minute via `toISOString().slice(0, 16)`)
+- Each group becomes a `{ prompt, mode, model, date, images: [{id, image_url}] }` object
+- Delete group: batch-delete all IDs in the group
+- Lightbox: use existing `Dialog` component with full-size image view
 
