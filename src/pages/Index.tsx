@@ -1032,7 +1032,7 @@ const Index = () => {
           </Card>
 
           {/* Output Section */}
-          <Card ref={resultSectionRef} className="border-border bg-card p-6 shadow-lg max-w-full overflow-hidden">
+          <Card ref={resultSectionRef} className="bg-card border-0 p-6 shadow-ambient max-w-full overflow-hidden rounded-lg">
             <div className="mb-4 max-w-full overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-semibold">
