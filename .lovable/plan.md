@@ -1,65 +1,49 @@
 
 
-## Plan: Add Profile / Account Page
+## Plan: Credit-Based Pricing Migration (Updated Tiers)
 
-### What it does
-A new `/profile` page accessible from the UserMenu dropdown. Shows the user's account info, current usage stats, active plan with upgrade/downgrade options, and add-on purchases — all in one place.
+### Credit Structure
 
-### UI Layout
+| Plan | Monthly Credits | Price | Max Images (all Nano Banana) |
+|------|----------------|-------|------------------------------|
+| Free | 15 | $0 | 60 |
+| Pro | 150 | $9.99 | 600 |
+| Premium | 500 | $24.99 | 2,000 |
 
-```text
-┌──────────────────────────────────────────────────┐
-│  ← Back                               [Avatar]   │
-│                                                   │
-│  My Account                                       │
-│                                                   │
-│  ┌──────────────────────────────────────────────┐ │
-│  │ Profile                                      │ │
-│  │ Name: John Doe              [avatar]         │ │
-│  │ Email: john@example.com                      │ │
-│  └──────────────────────────────────────────────┘ │
-│                                                   │
-│  ┌──────────────────────────────────────────────┐ │
-│  │ Current Plan: Pro                    $9.99/mo│ │
-│  │ Renews: May 6, 2026                          │ │
-│  │ Watermark removal: Active / [Add $2/mo]      │ │
-│  │                                               │ │
-│  │ [Manage Subscription]  [Change Plan]          │ │
-│  └──────────────────────────────────────────────┘ │
-│                                                   │
-│  ┌──────────────────────────────────────────────┐ │
-│  │ Today's Usage                                │ │
-│  │ Generations: ████████░░  8 / 20              │ │
-│  │ Prompts:     ██░░░░░░░░  3 / 20              │ │
-│  └──────────────────────────────────────────────┘ │
-│                                                   │
-│  ┌──────────────────────────────────────────────┐ │
-│  │ Quick Actions                                │ │
-│  │ [Generation History]  [Pricing]              │ │
-│  └──────────────────────────────────────────────┘ │
-│                                                   │
-│  [Sign Out]                                       │
-└──────────────────────────────────────────────────┘
-```
+| Model | Credits/Call |
+|-------|-------------|
+| Nano Banana (gemini-2.5-flash) | 0.25 |
+| Nano Banana 2 (gemini-3.1-flash) | 0.50 |
+| Nano Banana Pro (gemini-3-pro) | 0.75 |
+| Image Prompt (analyze) | 0.25 |
+
+This is more balanced — Free users get ~60 images/month (2/day pace), Pro gets ~600, Premium ~2,000. Competitive with Leonardo AI and Ideogram pricing.
 
 ### Changes
 
-**1. New file: `src/pages/Profile.tsx`**
-- Fetch user session, profile (display_name, avatar_url), user_credits (daily usage, watermark status), and subscription info via `check-subscription` and `check-credits` (action: "check")
-- **Profile card**: avatar, name, email
-- **Plan card**: current plan name, price, renewal date, watermark add-on status with "Add" button (calls `create-checkout` with `watermark_removal`)
-- **Usage card**: progress bars for daily generations used vs limit and daily prompts used vs limit (limits from plan: free=3/5, pro=20/20, premium=unlimited)
-- **Actions**: "Manage Subscription" (calls `customer-portal`), "Change Plan" (links to `/pricing`), "History" link, sign out button
-- Redirect to `/` if not authenticated
+**1. Database migration** — alter `user_credits`:
+- Add `monthly_credits_remaining DECIMAL DEFAULT 15`
+- Add `monthly_credits_total DECIMAL DEFAULT 15`
+- Add `credits_reset_date DATE DEFAULT CURRENT_DATE`
 
-**2. `src/App.tsx`** — add route `<Route path="/profile" element={<Profile />} />`
+**2. `supabase/functions/check-credits/index.ts`** — rewrite:
+- Replace daily limits with monthly credit pools: `{ free: 15, pro: 150, premium: 500 }`
+- Add credit costs per model map
+- `action: "check"` — return remaining credits, total, plan; auto-reset if 30+ days since `credits_reset_date`
+- `action: "decrement"` — subtract `creditCost * imageCount` from `monthly_credits_remaining`
+- Remove all daily generation/prompt logic
 
-**3. `src/components/UserMenu.tsx`** — add "My Account" menu item linking to `/profile` (with User icon), above "Generation History"
+**3. `src/pages/Index.tsx`** — update credit flow:
+- Pass model to check-credits for cost calculation
+- Show "X credits remaining" instead of daily counts
+- Calculate total cost as `creditCost * imageCount` before generating
 
-### Technical details
-- Reuse existing edge functions: `check-subscription` for plan/renewal, `check-credits` for usage stats, `create-checkout` for watermark add-on, `customer-portal` for Stripe portal
-- Query `user_credits` table directly for `daily_generations_used`, `daily_prompts_used`, `watermark_removed`
-- Plan limits constant: `{ free: { daily: 3, promptDaily: 5 }, pro: { daily: 20, promptDaily: 20 }, premium: { daily: 999, promptDaily: 999 } }`
-- Uses `Progress` component for usage bars
-- Consistent styling with `bg-card border-border` card pattern
+**4. `src/pages/Profile.tsx`** — update usage display:
+- Replace daily progress bars with monthly credit bar (e.g., "120 / 150 credits remaining")
+- Show credit cost per model
+
+**5. `src/pages/Pricing.tsx`** — update plan cards:
+- Change feature text from "X generations/day" to "15 / 150 / 500 credits/month"
+
+**6. `src/components/UpgradeDialog.tsx`** — update copy to reference monthly credits instead of daily limits
 
