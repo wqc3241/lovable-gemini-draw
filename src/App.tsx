@@ -15,6 +15,7 @@ import ImageToPromptGuide from "./pages/ImageToPromptGuide";
 import BatchProcessingGuide from "./pages/BatchProcessingGuide";
 import Auth from "./pages/Auth";
 import History from "./pages/History";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
