@@ -52,6 +52,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const [session, setSessionState] = useState<any>(null);
+  const [promptCredits, setPromptCredits] = useState<{ used: number; limit: number | "unlimited" } | null>(null);
 
   // Track auth state for UI gating
   useEffect(() => {
@@ -59,6 +60,21 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => setSessionState(s));
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch prompt credits when logged in
+  const fetchPromptCredits = useCallback(async () => {
+    if (!session) { setPromptCredits(null); return; }
+    try {
+      const { data, error } = await supabase.functions.invoke("check-credits", {
+        body: { action: "check", generationType: "prompt", imageCount: 1 },
+      });
+      if (!error && data) {
+        setPromptCredits({ used: data.used, limit: data.limit });
+      }
+    } catch { /* ignore */ }
+  }, [session]);
+
+  useEffect(() => { fetchPromptCredits(); }, [fetchPromptCredits]);
 
   // Real-time public stats
   const [stats, setStats] = useState<{ total_users: number; total_images: number }>({ total_users: 0, total_images: 0 });
@@ -633,12 +649,13 @@ const Index = () => {
         setAnalyzedPrompt(data.prompt);
         toast.success("Prompt generated successfully!");
 
-        // Decrement credits if logged in
+        // Decrement credits and refresh counter if logged in
         if (currentSession) {
           supabase.functions.invoke("check-credits", {
             body: { action: "decrement", generationType: "prompt", imageCount: 1 },
           }).then(({ error }) => {
             if (error) console.error("Failed to decrement credits:", error);
+            fetchPromptCredits();
           });
         }
       } else {
@@ -1068,6 +1085,16 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="prompt" className="space-y-4">
+                {session && promptCredits && (
+                  <div className="flex items-center justify-between rounded-md bg-surface-high px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Prompt analyses today</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {promptCredits.limit === "unlimited"
+                        ? `${promptCredits.used} used · Unlimited`
+                        : `${promptCredits.used} / ${promptCredits.limit} used`}
+                    </span>
+                  </div>
+                )}
                 <div>
                   <Label className="mb-2 block text-sm font-medium">Upload Image to Analyze</Label>
                   <div className="relative">
