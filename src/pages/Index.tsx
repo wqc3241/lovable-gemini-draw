@@ -656,7 +656,7 @@ const Index = () => {
             body: { action: "decrement", generationType: "prompt", imageCount: 1 },
           }).then(({ error }) => {
             if (error) console.error("Failed to decrement credits:", error);
-            fetchPromptCredits();
+            fetchCredits();
           });
         }
       } else {
