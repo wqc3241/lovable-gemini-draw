@@ -605,7 +605,7 @@ const Index = () => {
 
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 mb-12 w-full max-w-full">
           {/* Input Section */}
-          <Card className="border-border bg-card p-6 shadow-lg">
+          <Card className="bg-card border-0 p-6 shadow-ambient rounded-lg">
             <Tabs
               value={mode}
               onValueChange={(v) => {
