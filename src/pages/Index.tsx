@@ -32,6 +32,7 @@ import UserMenu from "@/components/UserMenu";
 import UpgradeDialog from "@/components/UpgradeDialog";
 import AuthDialog from "@/components/AuthDialog";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/hooks/useAuth";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
