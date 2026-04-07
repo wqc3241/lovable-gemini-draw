@@ -75,9 +75,9 @@ const History = () => {
   const fetchHistory = async () => {
     const { data, error } = await supabase
       .from("generation_history")
-      .select("*")
+      .select("id, prompt, model, aspect_ratio, image_url, mode, created_at")
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(50);
 
     if (error) {
       toast.error("Failed to load history");
