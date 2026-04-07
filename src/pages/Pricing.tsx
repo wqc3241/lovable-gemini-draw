@@ -199,18 +199,24 @@ const Pricing = () => {
             {plans.map((plan) => {
               const Icon = plan.icon;
               const isCurrent = currentPlan === plan.key;
+              const planTiers: Record<string, number> = { free: 0, pro: 1, premium: 2 };
+              const currentTier = planTiers[currentPlan] ?? 0;
+              const planTier = planTiers[plan.key] ?? 0;
+              const isDowngrade = planTier < currentTier && planTier > 0;
+              const isUpgrade = planTier > currentTier;
+              const showAccent = isCurrent ? false : plan.accent && currentTier < planTier;
               return (
                 <Card
                   key={plan.name}
                   className={`relative p-6 flex flex-col border rounded-lg ${
-                    plan.accent
+                    isCurrent
+                      ? "border-primary shadow-lg shadow-primary/10 ring-2 ring-primary/20 bg-card"
+                      : showAccent
                       ? "border-primary shadow-lg shadow-primary/10 bg-card"
-                      : isCurrent
-                      ? "border-primary/30 bg-card"
                       : "border-border bg-card"
                   }`}
                 >
-                  {plan.popular && (
+                  {plan.popular && !isCurrent && isUpgrade && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       Most Popular
                     </span>
@@ -266,7 +272,7 @@ const Pricing = () => {
                   ) : (
                     <Button
                       className="w-full"
-                      variant={plan.accent ? "default" : "outline"}
+                      variant={showAccent ? "default" : "outline"}
                       size="lg"
                       onClick={() => handleCheckout(plan.key)}
                       disabled={isLoading === plan.key || !user}
@@ -274,7 +280,7 @@ const Pricing = () => {
                       {isLoading === plan.key ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : null}
-                      {!user ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
+                      {!user ? "Sign in to upgrade" : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name}`}
                     </Button>
                   )}
                 </Card>

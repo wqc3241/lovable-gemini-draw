@@ -1358,11 +1358,17 @@ const Index = () => {
             ].map((plan) => {
               const Icon = plan.icon;
               const isCurrent = currentPlan === plan.key;
+              const planTiers: Record<string, number> = { free: 0, pro: 1, premium: 2 };
+              const currentTier = planTiers[currentPlan] ?? 0;
+              const planTier = planTiers[plan.key] ?? 0;
+              const isDowngrade = planTier < currentTier && planTier > 0;
+              const isUpgrade = planTier > currentTier;
+              const showAccent = isCurrent ? false : plan.accent && currentTier < planTier;
               return (
                 <Card
                   key={plan.key}
                   className={`relative p-6 flex flex-col border ${
-                    isCurrent ? "border-primary shadow-lg shadow-primary/10 ring-2 ring-primary/20" : plan.accent ? "border-primary shadow-lg shadow-primary/10" : "border-border"
+                    isCurrent ? "border-primary shadow-lg shadow-primary/10 ring-2 ring-primary/20" : showAccent ? "border-primary shadow-lg shadow-primary/10" : "border-border"
                   }`}
                 >
                   {isCurrent && (
@@ -1370,13 +1376,13 @@ const Index = () => {
                       Your Plan
                     </span>
                   )}
-                  {plan.popular && !isCurrent && (
+                  {plan.popular && !isCurrent && isUpgrade && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       Most Popular
                     </span>
                   )}
                   <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`h-5 w-5 ${isCurrent || plan.accent ? "text-primary" : "text-muted-foreground"}`} />
+                    <Icon className={`h-5 w-5 ${isCurrent || showAccent ? "text-primary" : "text-muted-foreground"}`} />
                     <h3 className="text-lg font-bold">{plan.name}</h3>
                   </div>
                   <div className="mb-1">
@@ -1405,7 +1411,7 @@ const Index = () => {
                   )}
                   <Button
                     className="w-full"
-                    variant={isCurrent ? "secondary" : plan.accent ? "default" : "outline"}
+                    variant={isCurrent ? "secondary" : showAccent ? "default" : "outline"}
                     disabled={isCurrent || checkoutLoading === plan.key}
                     onClick={async () => {
                       if (plan.key === "free") {
@@ -1431,7 +1437,7 @@ const Index = () => {
                     }}
                   >
                     {checkoutLoading === plan.key && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    {isCurrent ? "Current Plan" : plan.key === "free" ? "Get Started" : !session ? "Sign in to upgrade" : `Upgrade to ${plan.name}`}
+                    {isCurrent ? "Current Plan" : plan.key === "free" ? "Get Started" : !session ? "Sign in to upgrade" : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name}`}
                   </Button>
                 </Card>
               );
