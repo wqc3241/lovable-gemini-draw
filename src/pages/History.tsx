@@ -77,7 +77,7 @@ const History = () => {
       .from("generation_history")
       .select("id, prompt, model, aspect_ratio, image_url, mode, created_at")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(10);
 
     if (error) {
       toast.error("Failed to load history");
