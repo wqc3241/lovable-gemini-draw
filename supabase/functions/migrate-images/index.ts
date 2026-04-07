@@ -16,28 +16,23 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Authenticate caller
+    // Optionally scope to authenticated user; service-role calls migrate all
+    let userFilter: string | null = null;
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabase.auth.getUser(token);
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user) userFilter = user.id;
     }
 
-    // Find base64 images for this user
-    const { data: rows, error: fetchError } = await supabase
+    // Find base64 images
+    let query = supabase
       .from("generation_history")
       .select("id, image_url, user_id")
-      .eq("user_id", user.id)
       .like("image_url", "data:%")
-      .limit(50);
+      .limit(5);
+    if (userFilter) query = query.eq("user_id", userFilter);
+    const { data: rows, error: fetchError } = await query;
 
     if (fetchError) {
       throw fetchError;
