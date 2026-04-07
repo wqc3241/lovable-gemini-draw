@@ -83,6 +83,16 @@ const History = () => {
       toast.error("Failed to load history");
     } else {
       setHistory(data || []);
+      // Auto-migrate any remaining base64 images to storage in the background
+      const hasBase64 = data?.some((item) => item.image_url.startsWith("data:"));
+      if (hasBase64) {
+        supabase.functions.invoke("migrate-images").then(({ data: migData }) => {
+          if (migData?.migrated > 0) {
+            // Refresh to show storage URLs
+            fetchHistory();
+          }
+        });
+      }
     }
     setIsLoading(false);
   };
