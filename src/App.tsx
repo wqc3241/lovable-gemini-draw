@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useWelcomeEmail } from "@/hooks/useWelcomeEmail";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +24,8 @@ import Unsubscribe from "./pages/Unsubscribe";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useWelcomeEmail();
+
   useEffect(() => {
     // Light mode per design system — "The Pristine Curator"
     document.documentElement.classList.remove('dark');
