@@ -30,7 +30,7 @@ serve(async (req) => {
       .from("generation_history")
       .select("id, image_url, user_id")
       .like("image_url", "data:%")
-      .limit(20);
+      .limit(5);
     if (userFilter) query = query.eq("user_id", userFilter);
     const { data: rows, error: fetchError } = await query;
 
