@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,105 +26,60 @@ serve(async (req) => {
     if (!prompt) {
       return new Response(
         JSON.stringify({ error: 'Prompt is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "AI service not configured" }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Log incoming request details
+    // Authenticate user for storage upload
+    const authHeader = req.headers.get("Authorization");
+    let userId: string | null = null;
+    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    if (authHeader) {
+      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user) userId = user.id;
+    }
+
     console.log("=== 📥 INCOMING REQUEST ===");
     console.log("Prompt length:", prompt?.length || 0);
-    console.log("Prompt content:", prompt?.substring(0, 200) + (prompt?.length > 200 ? "..." : ""));
     console.log("Aspect ratio:", aspectRatio);
     console.log("Image data present:", !!imageData);
-
-    if (imageData) {
-      // Verify image format and size
-      const imageFormat = imageData.substring(0, 30);
-      const imageSizeKB = Math.round((imageData.length * 0.75) / 1024);
-      console.log("Image format prefix:", imageFormat);
-      console.log("Image data size (approx):", imageSizeKB, "KB");
-      console.log("Image data length:", imageData.length, "characters");
-    }
+    console.log("User ID:", userId || "anonymous");
 
     // Build content array for multimodal input
     const content: any[] = [{ type: "text", text: prompt }];
 
-    // Add main image (for edit mode)
     if (imageData) {
-      content.push({
-        type: "image_url",
-        image_url: { url: imageData }
-      });
+      content.push({ type: "image_url", image_url: { url: imageData } });
     }
 
-    // Add pasted images (for both generate and edit modes)
     if (pastedImages && Array.isArray(pastedImages)) {
       pastedImages.forEach((img: string) => {
-        content.push({
-          type: "image_url",
-          image_url: { url: img }
-        });
+        content.push({ type: "image_url", image_url: { url: img } });
       });
     }
 
     const requestBody: any = {
       model: selectedModel,
-      messages: [
-        {
-          role: "user",
-          content,
-        },
-      ],
+      messages: [{ role: "user", content }],
       modalities: ["image", "text"],
     };
 
-    // Add image_config for aspect ratio control (Gemini-specific parameter)
     if (aspectRatio && aspectRatio !== "auto") {
-      requestBody.image_config = {
-        aspect_ratio: aspectRatio
-      };
-    }
-
-    // Log the complete payload structure being sent to API
-    console.log("=== 📤 API REQUEST PAYLOAD ===");
-    console.log("Model:", requestBody.model);
-    console.log("Modalities:", requestBody.modalities);
-    console.log("Message role:", requestBody.messages[0].role);
-
-    if (Array.isArray(requestBody.messages[0].content)) {
-      console.log("Content type: ARRAY (image editing mode)");
-      console.log("Content items:", requestBody.messages[0].content.length);
-      requestBody.messages[0].content.forEach((item: any, idx: number) => {
-        if (item.type === "text") {
-          console.log(`  [${idx}] Text:`, item.text.substring(0, 100) + "...");
-        } else if (item.type === "image_url") {
-          console.log(`  [${idx}] Image URL present:`, !!item.image_url?.url);
-          console.log(`  [${idx}] Image URL format:`, item.image_url?.url?.substring(0, 30));
-        }
-      });
-    } else {
-      console.log("Content type: STRING (text-only generation)");
-      console.log("Content:", requestBody.messages[0].content.substring(0, 100) + "...");
-    }
-
-    if (requestBody.image_config) {
-      console.log("Image config:", JSON.stringify(requestBody.image_config));
+      requestBody.image_config = { aspect_ratio: aspectRatio };
     }
 
     console.log("=== 🚀 SENDING TO AI GATEWAY ===");
@@ -144,120 +100,122 @@ serve(async (req) => {
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { 
-            status: 429, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "Payment required. Please add credits to your Lovable AI workspace." }),
-          { 
-            status: 402, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       return new Response(
         JSON.stringify({ error: "Failed to generate image" }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
     
     console.log("=== ✅ AI RESPONSE RECEIVED ===");
-    console.log("Response status: SUCCESS");
 
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
-    // Check for IMAGE_OTHER (content policy rejection)
     const finishReason = data.choices?.[0]?.native_finish_reason;
     console.log("Finish reason:", finishReason);
-    console.log("Image URL present:", !!imageUrl);
+    
     if (finishReason === "IMAGE_OTHER") {
-      console.error("Content policy rejection detected (IMAGE_OTHER)");
       return new Response(
         JSON.stringify({ 
           error: "Content Policy Violation",
           details: "The AI refused to generate this image due to content policy restrictions. This commonly happens when:\n\n• The uploaded image contains people or faces\n• The prompt describes sensitive content or poses\n• The combination of image + prompt violates safety guidelines\n\nSuggestions:\n• Try a different image\n• Use more generic descriptions\n• Try generating from text only instead of editing"
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
     if (!imageUrl) {
-      // Log full response structure for debugging
-      console.error("No image URL in response. Full response structure:", JSON.stringify(data, null, 2));
-      
-      // Check if model returned an error message or explanation
       const modelMessage = data.choices?.[0]?.message?.content;
       if (modelMessage) {
-        console.error("Model returned message instead of image:", modelMessage);
         return new Response(
-          JSON.stringify({ 
-            error: "Image generation blocked",
-            details: modelMessage
-          }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          JSON.stringify({ error: "Image generation blocked", details: modelMessage }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      // Check if response has choices at all
       if (!data.choices || data.choices.length === 0) {
-        console.error("No choices in response");
         return new Response(
-          JSON.stringify({ 
-            error: "Invalid AI response",
-            details: "The AI model did not return any results. Please try again."
-          }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          JSON.stringify({ error: "Invalid AI response", details: "The AI model did not return any results. Please try again." }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
       return new Response(
-        JSON.stringify({ 
-          error: "No image generated",
-          details: "The AI model completed but did not return an image. This may be due to content policy restrictions."
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: "No image generated", details: "The AI model completed but did not return an image." }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // If user is authenticated, upload to storage and return public URL
+    if (userId && imageUrl.startsWith("data:")) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+        
+        // Decode base64 to binary
+        const base64Data = imageUrl.split(",")[1];
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        const fileId = crypto.randomUUID();
+        const filePath = `${userId}/${fileId}.png`;
+
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from("generated-images")
+          .upload(filePath, bytes, {
+            contentType: "image/png",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("Storage upload error:", uploadError);
+          // Fall back to returning base64
+          return new Response(
+            JSON.stringify({ imageUrl }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const { data: publicUrlData } = supabaseAdmin.storage
+          .from("generated-images")
+          .getPublicUrl(filePath);
+
+        console.log("✅ Image uploaded to storage:", publicUrlData.publicUrl);
+
+        return new Response(
+          JSON.stringify({ imageUrl: publicUrlData.publicUrl }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (uploadErr) {
+        console.error("Storage upload failed:", uploadErr);
+        // Fall back to base64
+        return new Response(
+          JSON.stringify({ imageUrl }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     return new Response(
       JSON.stringify({ imageUrl }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error("Error in generate-image function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error occurred" 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
