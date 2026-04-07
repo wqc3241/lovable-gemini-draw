@@ -74,7 +74,7 @@ const Index = () => {
 
   // Fetch monthly credits when logged in
   const fetchCredits = useCallback(async () => {
-    if (!session) { setMonthlyCredits(null); return; }
+    if (!authReady || !session) { setMonthlyCredits(null); return; }
     try {
       const { data, error } = await supabase.functions.invoke("check-credits", {
         body: { action: "check", model, imageCount: 1, generationType: mode },

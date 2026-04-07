@@ -56,22 +56,20 @@ function groupHistory(items: HistoryItem[]): GenerationGroup[] {
 
 const History = () => {
   const navigate = useNavigate();
+  const { user, isReady } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      fetchHistory();
-    };
-    checkAuth();
-  }, [navigate]);
+    if (!isReady) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    fetchHistory();
+  }, [isReady, user, navigate]);
 
   const fetchHistory = async () => {
     const { data, error } = await supabase
