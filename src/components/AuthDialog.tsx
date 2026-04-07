@@ -31,19 +31,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       });
       if (error) throw error;
       toast.success("Check your email to verify your account!");
-
-      // Send welcome email (fire-and-forget)
-      if (data?.user) {
-        const name = email.split("@")[0];
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "welcome-email",
-            recipientEmail: email,
-            idempotencyKey: `welcome-${data.user.id}`,
-            templateData: { name },
-          },
-        }).catch(() => {});
-      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {
