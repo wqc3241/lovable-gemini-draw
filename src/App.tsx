@@ -24,6 +24,8 @@ import Unsubscribe from "./pages/Unsubscribe";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useWelcomeEmail();
+
   useEffect(() => {
     // Light mode per design system — "The Pristine Curator"
     document.documentElement.classList.remove('dark');
