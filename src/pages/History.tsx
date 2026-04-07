@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,12 +10,13 @@ import { SEO } from "@/components/SEO";
 import UserMenu from "@/components/UserMenu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-interface HistoryMeta {
+interface HistoryItem {
   id: string;
   prompt: string;
   model: string;
   aspect_ratio: string;
   mode: string;
+  image_url: string;
   created_at: string;
 }
 
@@ -25,7 +26,7 @@ interface GenerationGroup {
   mode: string;
   model: string;
   date: string;
-  imageIds: string[];
+  images: { id: string; url: string }[];
 }
 
 const MODEL_LABELS: Record<string, string> = {
@@ -34,7 +35,7 @@ const MODEL_LABELS: Record<string, string> = {
   "google/gemini-3-pro-image-preview": "Pro",
 };
 
-function groupHistory(items: HistoryMeta[]): GenerationGroup[] {
+function groupHistory(items: HistoryItem[]): GenerationGroup[] {
   const map = new Map<string, GenerationGroup>();
   for (const item of items) {
     const minuteKey = new Date(item.created_at).toISOString().slice(0, 16);
@@ -46,62 +47,18 @@ function groupHistory(items: HistoryMeta[]): GenerationGroup[] {
         mode: item.mode,
         model: item.model,
         date: item.created_at,
-        imageIds: [],
+        images: [],
       });
     }
-    map.get(key)!.imageIds.push(item.id);
+    map.get(key)!.images.push({ id: item.id, url: item.image_url });
   }
   return Array.from(map.values());
-}
-
-/** Lazily loads a single image_url by id */
-function LazyImage({ id, alt, onClick }: { id: string; alt: string; onClick: (url: string) => void }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    supabase
-      .from("generation_history")
-      .select("image_url")
-      .eq("id", id)
-      .single()
-      .then(({ data }) => {
-        if (!cancelled && data) setUrl(data.image_url);
-        setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-lg border border-border bg-muted flex items-center justify-center">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!url) return null;
-
-  return (
-    <button
-      onClick={() => onClick(url)}
-      className="shrink-0 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary/40 transition-all"
-    >
-      <img
-        src={url}
-        alt={alt}
-        className="h-24 w-24 sm:h-28 sm:w-28 object-cover"
-        loading="lazy"
-      />
-    </button>
-  );
 }
 
 const History = () => {
   const navigate = useNavigate();
   const { user, isReady } = useAuth();
-  const [history, setHistory] = useState<HistoryMeta[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -118,7 +75,7 @@ const History = () => {
   const fetchHistory = async () => {
     const { data, error } = await supabase
       .from("generation_history")
-      .select("id, prompt, model, aspect_ratio, mode, created_at")
+      .select("id, prompt, model, aspect_ratio, mode, image_url, created_at")
       .order("created_at", { ascending: false })
       .limit(100);
 
@@ -126,12 +83,22 @@ const History = () => {
       toast.error("Failed to load history");
     } else {
       setHistory(data || []);
+      // Auto-migrate any remaining base64 images to storage in the background
+      const hasBase64 = data?.some((item) => item.image_url.startsWith("data:"));
+      if (hasBase64) {
+        supabase.functions.invoke("migrate-images").then(({ data: migData }) => {
+          if (migData?.migrated > 0) {
+            // Refresh to show storage URLs
+            fetchHistory();
+          }
+        });
+      }
     }
     setIsLoading(false);
   };
 
   const handleDeleteGroup = async (group: GenerationGroup) => {
-    const ids = group.imageIds;
+    const ids = group.images.map((img) => img.id);
     const { error } = await supabase
       .from("generation_history")
       .delete()
@@ -139,6 +106,20 @@ const History = () => {
     if (error) {
       toast.error("Failed to delete");
     } else {
+      // Also delete from storage for non-base64 URLs
+      for (const img of group.images) {
+        if (!img.url.startsWith("data:")) {
+          try {
+            const urlParts = new URL(img.url);
+            const pathMatch = urlParts.pathname.match(/\/generated-images\/(.+)$/);
+            if (pathMatch) {
+              await supabase.storage.from("generated-images").remove([pathMatch[1]]);
+            }
+          } catch {
+            // Ignore storage deletion errors
+          }
+        }
+      }
       setHistory((prev) => prev.filter((item) => !ids.includes(item.id)));
       toast.success("Deleted");
     }
@@ -233,13 +214,19 @@ const History = () => {
                     </div>
 
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">
-                      {group.imageIds.map((imgId) => (
-                        <LazyImage
-                          key={imgId}
-                          id={imgId}
-                          alt={group.prompt}
-                          onClick={(url) => setLightboxUrl(url)}
-                        />
+                      {group.images.map((img) => (
+                        <button
+                          key={img.id}
+                          onClick={() => setLightboxUrl(img.url)}
+                          className="shrink-0 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary/40 transition-all"
+                        >
+                          <img
+                            src={img.url}
+                            alt={group.prompt}
+                            className="h-24 w-24 sm:h-28 sm:w-28 object-cover"
+                            loading="lazy"
+                          />
+                        </button>
                       ))}
                     </div>
 
