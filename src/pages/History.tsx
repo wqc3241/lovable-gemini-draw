@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,12 +10,11 @@ import { SEO } from "@/components/SEO";
 import UserMenu from "@/components/UserMenu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-interface HistoryItem {
+interface HistoryMeta {
   id: string;
   prompt: string;
   model: string;
   aspect_ratio: string;
-  image_url: string;
   mode: string;
   created_at: string;
 }
@@ -26,7 +25,7 @@ interface GenerationGroup {
   mode: string;
   model: string;
   date: string;
-  images: { id: string; image_url: string }[];
+  imageIds: string[];
 }
 
 const MODEL_LABELS: Record<string, string> = {
@@ -35,7 +34,7 @@ const MODEL_LABELS: Record<string, string> = {
   "google/gemini-3-pro-image-preview": "Pro",
 };
 
-function groupHistory(items: HistoryItem[]): GenerationGroup[] {
+function groupHistory(items: HistoryMeta[]): GenerationGroup[] {
   const map = new Map<string, GenerationGroup>();
   for (const item of items) {
     const minuteKey = new Date(item.created_at).toISOString().slice(0, 16);
@@ -47,18 +46,62 @@ function groupHistory(items: HistoryItem[]): GenerationGroup[] {
         mode: item.mode,
         model: item.model,
         date: item.created_at,
-        images: [],
+        imageIds: [],
       });
     }
-    map.get(key)!.images.push({ id: item.id, image_url: item.image_url });
+    map.get(key)!.imageIds.push(item.id);
   }
   return Array.from(map.values());
+}
+
+/** Lazily loads a single image_url by id */
+function LazyImage({ id, alt, onClick }: { id: string; alt: string; onClick: (url: string) => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("generation_history")
+      .select("image_url")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        if (!cancelled && data) setUrl(data.image_url);
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-lg border border-border bg-muted flex items-center justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!url) return null;
+
+  return (
+    <button
+      onClick={() => onClick(url)}
+      className="shrink-0 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary/40 transition-all"
+    >
+      <img
+        src={url}
+        alt={alt}
+        className="h-24 w-24 sm:h-28 sm:w-28 object-cover"
+        loading="lazy"
+      />
+    </button>
+  );
 }
 
 const History = () => {
   const navigate = useNavigate();
   const { user, isReady } = useAuth();
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryMeta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -75,9 +118,9 @@ const History = () => {
   const fetchHistory = async () => {
     const { data, error } = await supabase
       .from("generation_history")
-      .select("id, prompt, model, aspect_ratio, image_url, mode, created_at")
+      .select("id, prompt, model, aspect_ratio, mode, created_at")
       .order("created_at", { ascending: false })
-      .limit(10);
+      .limit(100);
 
     if (error) {
       toast.error("Failed to load history");
@@ -88,7 +131,7 @@ const History = () => {
   };
 
   const handleDeleteGroup = async (group: GenerationGroup) => {
-    const ids = group.images.map((img) => img.id);
+    const ids = group.imageIds;
     const { error } = await supabase
       .from("generation_history")
       .delete()
@@ -190,19 +233,13 @@ const History = () => {
                     </div>
 
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">
-                      {group.images.map((img) => (
-                        <button
-                          key={img.id}
-                          onClick={() => setLightboxUrl(img.image_url)}
-                          className="shrink-0 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary/40 transition-all"
-                        >
-                          <img
-                            src={img.image_url}
-                            alt={group.prompt}
-                            className="h-24 w-24 sm:h-28 sm:w-28 object-cover"
-                            loading="lazy"
-                          />
-                        </button>
+                      {group.imageIds.map((imgId) => (
+                        <LazyImage
+                          key={imgId}
+                          id={imgId}
+                          alt={group.prompt}
+                          onClick={(url) => setLightboxUrl(url)}
+                        />
                       ))}
                     </div>
 
