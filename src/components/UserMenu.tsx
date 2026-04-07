@@ -42,7 +42,6 @@ const UserMenu = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
     setProfile(null);
     toast.success("Signed out");
   };
