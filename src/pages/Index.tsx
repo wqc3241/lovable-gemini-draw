@@ -55,15 +55,8 @@ const Index = () => {
   const [currentPlan, setCurrentPlan] = useState("free");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
-  const [session, setSessionState] = useState<any>(null);
+  const { session, isReady: authReady } = useAuth();
   const [monthlyCredits, setMonthlyCredits] = useState<{ remaining: number; total: number } | null>(null);
-
-  // Track auth state for UI gating
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => setSessionState(s));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => setSessionState(s));
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Fetch current plan from subscriptions table
   useEffect(() => {
