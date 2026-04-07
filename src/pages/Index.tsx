@@ -32,6 +32,7 @@ import UserMenu from "@/components/UserMenu";
 import UpgradeDialog from "@/components/UpgradeDialog";
 import AuthDialog from "@/components/AuthDialog";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/hooks/useAuth";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -55,33 +56,26 @@ const Index = () => {
   const [currentPlan, setCurrentPlan] = useState("free");
   const isMobile = useIsMobile();
   const resultSectionRef = useRef<HTMLDivElement>(null);
-  const [session, setSessionState] = useState<any>(null);
+  const { session, isReady: authReady } = useAuth();
   const [monthlyCredits, setMonthlyCredits] = useState<{ remaining: number; total: number } | null>(null);
-
-  // Track auth state for UI gating
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => setSessionState(s));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => setSessionState(s));
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Fetch current plan from subscriptions table
   useEffect(() => {
     const fetchPlan = async () => {
-      if (!session?.user?.id) { setCurrentPlan("free"); return; }
+      if (!authReady || !session?.user?.id) { setCurrentPlan("free"); return; }
       const { data } = await supabase
         .from("subscriptions")
         .select("plan")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
       if (data?.plan) setCurrentPlan(data.plan);
     };
     fetchPlan();
-  }, [session]);
+  }, [authReady, session]);
 
   // Fetch monthly credits when logged in
   const fetchCredits = useCallback(async () => {
-    if (!session) { setMonthlyCredits(null); return; }
+    if (!authReady || !session) { setMonthlyCredits(null); return; }
     try {
       const { data, error } = await supabase.functions.invoke("check-credits", {
         body: { action: "check", model, imageCount: 1, generationType: mode },

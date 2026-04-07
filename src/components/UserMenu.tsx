@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,28 +18,18 @@ import AuthDialog from "@/components/AuthDialog";
 
 const UserMenu = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user, isReady } = useAuth();
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        setAuthOpen(false);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    if (isReady && user) {
+      fetchProfile(user.id);
+      setAuthOpen(false);
+    } else if (isReady && !user) {
+      setProfile(null);
+    }
+  }, [isReady, user]);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -51,7 +42,6 @@ const UserMenu = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
     setProfile(null);
     toast.success("Signed out");
   };

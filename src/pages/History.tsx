@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2, Loader2, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
@@ -56,22 +57,20 @@ function groupHistory(items: HistoryItem[]): GenerationGroup[] {
 
 const History = () => {
   const navigate = useNavigate();
+  const { user, isReady } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      fetchHistory();
-    };
-    checkAuth();
-  }, [navigate]);
+    if (!isReady) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    fetchHistory();
+  }, [isReady, user, navigate]);
 
   const fetchHistory = async () => {
     const { data, error } = await supabase

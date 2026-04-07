@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -33,7 +34,7 @@ const CREDIT_COSTS = [
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isReady } = useAuth();
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [currentPlan, setCurrentPlan] = useState("free");
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
@@ -47,15 +48,13 @@ const Profile = () => {
   const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        navigate("/");
-        return;
-      }
-      setUser(session.user);
-      loadData(session.user.id);
-    });
-  }, [navigate]);
+    if (!isReady) return;
+    if (!user) {
+      navigate("/");
+      return;
+    }
+    loadData(user.id);
+  }, [isReady, user, navigate]);
 
   const loadData = async (userId: string) => {
     setLoading(true);
