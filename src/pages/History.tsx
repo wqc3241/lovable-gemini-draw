@@ -55,11 +55,15 @@ function groupHistory(items: HistoryItem[]): GenerationGroup[] {
   return Array.from(map.values());
 }
 
+const PAGE_SIZE = 50;
+
 const History = () => {
   const navigate = useNavigate();
   const { user, isReady } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
@@ -77,24 +81,41 @@ const History = () => {
       .from("generation_history")
       .select("id, prompt, model, aspect_ratio, mode, image_url, created_at")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(PAGE_SIZE);
 
     if (error) {
       toast.error("Failed to load history");
     } else {
       setHistory(data || []);
-      // Auto-migrate any remaining base64 images to storage in the background
+      setHasMore((data?.length ?? 0) === PAGE_SIZE);
       const hasBase64 = data?.some((item) => item.image_url.startsWith("data:"));
       if (hasBase64) {
         supabase.functions.invoke("migrate-images").then(({ data: migData }) => {
-          if (migData?.migrated > 0) {
-            // Refresh to show storage URLs
-            fetchHistory();
-          }
+          if (migData?.migrated > 0) fetchHistory();
         });
       }
     }
     setIsLoading(false);
+  };
+
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore || history.length === 0) return;
+    setIsLoadingMore(true);
+    const lastDate = history[history.length - 1].created_at;
+    const { data, error } = await supabase
+      .from("generation_history")
+      .select("id, prompt, model, aspect_ratio, mode, image_url, created_at")
+      .order("created_at", { ascending: false })
+      .lt("created_at", lastDate)
+      .limit(PAGE_SIZE);
+
+    if (error) {
+      toast.error("Failed to load more");
+    } else {
+      setHistory((prev) => [...prev, ...(data || [])]);
+      setHasMore((data?.length ?? 0) === PAGE_SIZE);
+    }
+    setIsLoadingMore(false);
   };
 
   const handleDeleteGroup = async (group: GenerationGroup) => {
