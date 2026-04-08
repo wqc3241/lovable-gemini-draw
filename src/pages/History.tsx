@@ -259,6 +259,22 @@ const History = () => {
                   </Card>
                 );
               })}
+              {hasMore && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={isLoadingMore}
+                    className="w-full sm:w-auto"
+                  >
+                    {isLoadingMore ? (
+                      <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading...</>
+                    ) : (
+                      "Load more"
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
